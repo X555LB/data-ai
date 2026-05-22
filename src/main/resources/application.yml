@@ -97,25 +97,15 @@ spring:
         client:
           host: 127.0.0.1
           port: 19530
-    qianfan: # 文心一言
-      api-key: your-qianfan-api-key
-      secret-key: your-qianfan-secret-key
     zhipuai: # 智谱 AI
       api-key: your-zhipuai-api-key
     openai: # OpenAI 官方
       api-key: your-openai-api-key
       base-url: https://api.gptsapi.net
-    azure: # OpenAI 微软
-      openai:
-        endpoint: https://eastusprejade.openai.azure.com
-    anthropic: # Anthropic Claude
-      api-key: your-anthropic-api-key
     ollama:
       base-url: http://127.0.0.1:11434
       chat:
         model: llama3
-    stabilityai:
-      api-key: your-stabilityai-api-key
     dashscope: # 通义千问
       api-key: your-dashscope-api-key
     minimax: # Minimax：https://www.minimaxi.com/
@@ -149,14 +139,6 @@ spring:
 
 boss:
   ai:
-    gemini: # 谷歌 Gemini
-      enable: true
-      api-key: your-gemini-api-key
-      model: gemini-2.5-flash
-    doubao: # 字节豆包
-      enable: true
-      api-key: your-doubao-api-key
-      model: doubao-1-5-lite-32k-250115
     hunyuan: # 腾讯混元
       enable: true
       api-key: your-hunyuan-api-key

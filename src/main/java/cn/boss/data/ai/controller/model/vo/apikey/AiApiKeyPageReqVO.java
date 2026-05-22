@@ -8,7 +8,7 @@ import lombok.Data;
 @Data
 public class AiApiKeyPageReqVO extends PageParam {
 
-    @Schema(description = "名称", example = "文心一言")
+    @Schema(description = "名称", example = "通义千问")
     private String name;
 
     @Schema(description = "平台", example = "OpenAI")

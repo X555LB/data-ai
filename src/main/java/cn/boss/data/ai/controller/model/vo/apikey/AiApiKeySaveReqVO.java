@@ -12,7 +12,7 @@ public class AiApiKeySaveReqVO {
     @Schema(description = "编号", requiredMode = Schema.RequiredMode.REQUIRED, example = "23538")
     private Long id;
 
-    @Schema(description = "名称", requiredMode = Schema.RequiredMode.REQUIRED, example = "文心一言")
+    @Schema(description = "名称", requiredMode = Schema.RequiredMode.REQUIRED, example = "通义千问")
     @NotEmpty(message = "名称不能为空")
     private String name;
 

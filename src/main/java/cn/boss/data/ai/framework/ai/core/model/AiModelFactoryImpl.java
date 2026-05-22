@@ -12,8 +12,6 @@ import cn.boss.data.ai.enums.model.AiPlatformEnum;
 import cn.boss.data.ai.framework.ai.config.AiAutoConfiguration;
 import cn.boss.data.ai.framework.ai.config.AiProperties;
 import cn.boss.data.ai.framework.ai.core.model.baichuan.BaiChuanChatModel;
-import cn.boss.data.ai.framework.ai.core.model.doubao.DouBaoChatModel;
-import cn.boss.data.ai.framework.ai.core.model.gemini.GeminiChatModel;
 import cn.boss.data.ai.framework.ai.core.model.hunyuan.HunYuanChatModel;
 import cn.boss.data.ai.framework.ai.core.model.siliconflow.SiliconFlowApiConstants;
 import cn.boss.data.ai.framework.ai.core.model.siliconflow.SiliconFlowChatModel;
@@ -25,8 +23,6 @@ import com.alibaba.cloud.ai.dashscope.chat.DashScopeChatModel;
 import com.alibaba.cloud.ai.dashscope.chat.DashScopeChatOptions;
 import com.alibaba.cloud.ai.dashscope.embedding.DashScopeEmbeddingModel;
 import com.alibaba.cloud.ai.dashscope.embedding.DashScopeEmbeddingOptions;
-import com.azure.ai.openai.OpenAIClientBuilder;
-import com.azure.core.credential.KeyCredential;
 import io.micrometer.observation.ObservationRegistry;
 import io.qdrant.client.QdrantClient;
 import io.qdrant.client.QdrantGrpcClient;
@@ -35,14 +31,6 @@ import org.springaicommunity.moonshot.MoonshotChatModel;
 import org.springaicommunity.moonshot.MoonshotChatOptions;
 import org.springaicommunity.moonshot.api.MoonshotApi;
 import org.springaicommunity.moonshot.autoconfigure.MoonshotChatAutoConfiguration;
-import org.springaicommunity.qianfan.QianFanChatModel;
-import org.springaicommunity.qianfan.QianFanEmbeddingModel;
-import org.springaicommunity.qianfan.QianFanEmbeddingOptions;
-import org.springaicommunity.qianfan.api.QianFanApi;
-import org.springaicommunity.qianfan.autoconfigure.QianFanChatAutoConfiguration;
-import org.springaicommunity.qianfan.autoconfigure.QianFanEmbeddingAutoConfiguration;
-import org.springframework.ai.azure.openai.AzureOpenAiChatModel;
-import org.springframework.ai.azure.openai.AzureOpenAiEmbeddingModel;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.deepseek.DeepSeekChatModel;
 import org.springframework.ai.deepseek.DeepSeekChatOptions;
@@ -56,10 +44,6 @@ import org.springframework.ai.minimax.MiniMaxChatOptions;
 import org.springframework.ai.minimax.MiniMaxEmbeddingModel;
 import org.springframework.ai.minimax.MiniMaxEmbeddingOptions;
 import org.springframework.ai.minimax.api.MiniMaxApi;
-import org.springframework.ai.model.anthropic.autoconfigure.AnthropicChatAutoConfiguration;
-import org.springframework.ai.model.azure.openai.autoconfigure.AzureOpenAiChatAutoConfiguration;
-import org.springframework.ai.model.azure.openai.autoconfigure.AzureOpenAiEmbeddingAutoConfiguration;
-import org.springframework.ai.model.azure.openai.autoconfigure.AzureOpenAiEmbeddingProperties;
 import org.springframework.ai.model.deepseek.autoconfigure.DeepSeekChatAutoConfiguration;
 import org.springframework.ai.model.minimax.autoconfigure.MiniMaxChatAutoConfiguration;
 import org.springframework.ai.model.minimax.autoconfigure.MiniMaxEmbeddingAutoConfiguration;
@@ -78,8 +62,6 @@ import org.springframework.ai.openai.OpenAiEmbeddingModel;
 import org.springframework.ai.openai.OpenAiEmbeddingOptions;
 import org.springframework.ai.openai.api.OpenAiApi;
 import org.springframework.ai.openai.api.common.OpenAiApiConstants;
-import org.springframework.ai.anthropic.AnthropicChatModel;
-import org.springframework.ai.anthropic.api.AnthropicApi;
 import org.springframework.ai.vectorstore.SimpleVectorStore;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.ai.vectorstore.observation.DefaultVectorStoreObservationConvention;
@@ -120,12 +102,8 @@ public class AiModelFactoryImpl implements AiModelFactory {
             switch (platform) {
                 case TONG_YI:
                     return buildTongYiChatModel(apiKey);
-                case YI_YAN:
-                    return buildYiYanChatModel(apiKey);
                 case DEEP_SEEK:
                     return buildDeepSeekChatModel(apiKey);
-                case DOU_BAO:
-                    return buildDouBaoChatModel(apiKey);
                 case HUN_YUAN:
                     return buildHunYuanChatModel(apiKey, url);
                 case SILICON_FLOW:
@@ -142,12 +120,6 @@ public class AiModelFactoryImpl implements AiModelFactory {
                     return buildBaiChuanChatModel(apiKey);
                 case OPENAI:
                     return buildOpenAiChatModel(apiKey, url);
-                case AZURE_OPENAI:
-                    return buildAzureOpenAiChatModel(apiKey, url);
-                case ANTHROPIC:
-                    return buildAnthropicChatModel(apiKey, url);
-                case GEMINI:
-                    return buildGeminiChatModel(apiKey);
                 case OLLAMA:
                     return buildOllamaChatModel(url);
                 case GROK:
@@ -164,12 +136,8 @@ public class AiModelFactoryImpl implements AiModelFactory {
         switch (platform) {
             case TONG_YI:
                 return SpringUtils.getBean(DashScopeChatModel.class);
-            case YI_YAN:
-                return SpringUtils.getBean(QianFanChatModel.class);
             case DEEP_SEEK:
                 return SpringUtils.getBean(DeepSeekChatModel.class);
-            case DOU_BAO:
-                return SpringUtils.getBean(DouBaoChatModel.class);
             case HUN_YUAN:
                 return SpringUtils.getBean(HunYuanChatModel.class);
             case SILICON_FLOW:
@@ -186,12 +154,6 @@ public class AiModelFactoryImpl implements AiModelFactory {
                 return SpringUtils.getBean(BaiChuanChatModel.class);
             case OPENAI:
                 return SpringUtils.getBean(OpenAiChatModel.class);
-            case AZURE_OPENAI:
-                return SpringUtils.getBean(AzureOpenAiChatModel.class);
-            case ANTHROPIC:
-                return SpringUtils.getBean(AnthropicChatModel.class);
-            case GEMINI:
-                return SpringUtils.getBean(GeminiChatModel.class);
             case OLLAMA:
                 return SpringUtils.getBean(OllamaChatModel.class);
             default:
@@ -207,16 +169,12 @@ public class AiModelFactoryImpl implements AiModelFactory {
             switch (platform) {
                 case TONG_YI:
                     return buildTongYiEmbeddingModel(apiKey, model);
-                case YI_YAN:
-                    return buildYiYanEmbeddingModel(apiKey, model);
                 case ZHI_PU:
                     return buildZhiPuEmbeddingModel(apiKey, url, model);
                 case MINI_MAX:
                     return buildMiniMaxEmbeddingModel(apiKey, url, model);
                 case OPENAI:
                     return buildOpenAiEmbeddingModel(apiKey, url, model);
-                case AZURE_OPENAI:
-                    return buildAzureOpenAiEmbeddingModel(apiKey, url, model);
                 case OLLAMA:
                     return buildOllamaEmbeddingModel(url, model);
                 default:
@@ -264,15 +222,6 @@ public class AiModelFactoryImpl implements AiModelFactory {
                 .build();
     }
 
-    private static QianFanChatModel buildYiYanChatModel(String key) {
-        List<String> keys = StrUtil.split(key, '|');
-        Assert.equals(keys.size(), 2, "YiYanChatClient 的密钥需要 (appKey|secretKey) 格式");
-        String appKey = keys.get(0);
-        String secretKey = keys.get(1);
-        QianFanApi qianFanApi = new QianFanApi(appKey, secretKey);
-        return new QianFanChatModel(qianFanApi);
-    }
-
     private static DeepSeekChatModel buildDeepSeekChatModel(String apiKey) {
         DeepSeekApi deepSeekApi = DeepSeekApi.builder().apiKey(apiKey).build();
         DeepSeekChatOptions options = DeepSeekChatOptions.builder().model(DeepSeekApi.DEFAULT_CHAT_MODEL)
@@ -282,12 +231,6 @@ public class AiModelFactoryImpl implements AiModelFactory {
                 .defaultOptions(options)
                 .toolCallingManager(getToolCallingManager())
                 .build();
-    }
-
-    private ChatModel buildDouBaoChatModel(String apiKey) {
-        AiProperties.DouBao properties = new AiProperties.DouBao();
-        properties.setApiKey(apiKey);
-        return new AiAutoConfiguration().buildDouBaoChatClient(properties);
     }
 
     private ChatModel buildHunYuanChatModel(String apiKey, String url) {
@@ -358,34 +301,6 @@ public class AiModelFactoryImpl implements AiModelFactory {
                 .build();
     }
 
-    private static AzureOpenAiChatModel buildAzureOpenAiChatModel(String apiKey, String url) {
-        OpenAIClientBuilder openAIClientBuilder = new OpenAIClientBuilder()
-                .endpoint(url).credential(new KeyCredential(apiKey));
-        return AzureOpenAiChatModel.builder()
-                .openAIClientBuilder(openAIClientBuilder)
-                .toolCallingManager(getToolCallingManager())
-                .build();
-    }
-
-    private static AnthropicChatModel buildAnthropicChatModel(String apiKey, String url) {
-        AnthropicApi.Builder builder = AnthropicApi.builder().apiKey(apiKey);
-        if (StrUtil.isNotEmpty(url)) {
-            builder.baseUrl(url);
-        }
-        AnthropicApi anthropicApi = builder.build();
-        return AnthropicChatModel.builder()
-                .anthropicApi(anthropicApi)
-                .toolCallingManager(getToolCallingManager())
-                .build();
-    }
-
-    private static GeminiChatModel buildGeminiChatModel(String apiKey) {
-        AiProperties.Gemini properties = SpringUtils.getBean(AiProperties.class)
-                .getGemini();
-        properties.setApiKey(apiKey);
-        return new AiAutoConfiguration().buildGeminiChatClient(properties);
-    }
-
     private static OllamaChatModel buildOllamaChatModel(String url) {
         OllamaApi ollamaApi = OllamaApi.builder().baseUrl(url).build();
         return OllamaChatModel.builder()
@@ -425,16 +340,6 @@ public class AiModelFactoryImpl implements AiModelFactory {
         return new MiniMaxEmbeddingModel(miniMaxApi, MetadataMode.EMBED, miniMaxEmbeddingOptions);
     }
 
-    private QianFanEmbeddingModel buildYiYanEmbeddingModel(String key, String model) {
-        List<String> keys = StrUtil.split(key, '|');
-        Assert.equals(keys.size(), 2, "YiYanChatClient 的密钥需要 (appKey|secretKey) 格式");
-        String appKey = keys.get(0);
-        String secretKey = keys.get(1);
-        QianFanApi qianFanApi = new QianFanApi(appKey, secretKey);
-        QianFanEmbeddingOptions qianFanEmbeddingOptions = QianFanEmbeddingOptions.builder().model(model).build();
-        return new QianFanEmbeddingModel(qianFanApi, MetadataMode.EMBED, qianFanEmbeddingOptions);
-    }
-
     private OllamaEmbeddingModel buildOllamaEmbeddingModel(String url, String model) {
         OllamaApi ollamaApi = OllamaApi.builder().baseUrl(url).build();
         OllamaEmbeddingOptions ollamaOptions = OllamaEmbeddingOptions.builder().model(model).build();
@@ -449,15 +354,6 @@ public class AiModelFactoryImpl implements AiModelFactory {
         OpenAiApi openAiApi = OpenAiApi.builder().baseUrl(url).apiKey(openAiToken).build();
         OpenAiEmbeddingOptions openAiEmbeddingProperties = OpenAiEmbeddingOptions.builder().model(model).build();
         return new OpenAiEmbeddingModel(openAiApi, MetadataMode.EMBED, openAiEmbeddingProperties);
-    }
-
-    private AzureOpenAiEmbeddingModel buildAzureOpenAiEmbeddingModel(String apiKey, String url, String model) {
-        AzureOpenAiEmbeddingAutoConfiguration azureOpenAiAutoConfiguration = new AzureOpenAiEmbeddingAutoConfiguration();
-        OpenAIClientBuilder openAIClientBuilder = new OpenAIClientBuilder()
-                .endpoint(url).credential(new KeyCredential(apiKey));
-        AzureOpenAiEmbeddingProperties embeddingProperties = SpringUtils.getBean(AzureOpenAiEmbeddingProperties.class);
-        return azureOpenAiAutoConfiguration.azureOpenAiEmbeddingModel(openAIClientBuilder, embeddingProperties,
-                getObservationRegistry(), getEmbeddingModelObservationConvention());
     }
 
     // ========== 各种创建 VectorStore 的方法 ==========

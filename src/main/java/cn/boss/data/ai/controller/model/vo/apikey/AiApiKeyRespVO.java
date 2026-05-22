@@ -10,7 +10,7 @@ public class AiApiKeyRespVO {
     @Schema(description = "编号", requiredMode = Schema.RequiredMode.REQUIRED, example = "23538")
     private Long id;
 
-    @Schema(description = "名称", requiredMode = Schema.RequiredMode.REQUIRED, example = "文心一言")
+    @Schema(description = "名称", requiredMode = Schema.RequiredMode.REQUIRED, example = "通义千问")
     private String name;
 
     @Schema(description = "密钥", requiredMode = Schema.RequiredMode.REQUIRED, example = "ABC")

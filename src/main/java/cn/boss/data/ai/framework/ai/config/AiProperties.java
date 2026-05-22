@@ -11,16 +11,6 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public class AiProperties {
 
     /**
-     * 谷歌 Gemini
-     */
-    private Gemini gemini;
-
-    /**
-     * 字节豆包
-     */
-    private DouBao doubao;
-
-    /**
      * 腾讯混元
      */
     private HunYuan hunyuan;
@@ -49,26 +39,6 @@ public class AiProperties {
      * 网络搜索
      */
     private WebSearch webSearch;
-
-    @Data
-    public static class Gemini {
-        private String enable;
-        private String apiKey;
-        private String model;
-        private Double temperature;
-        private Integer maxTokens;
-        private Double topP;
-    }
-
-    @Data
-    public static class DouBao {
-        private String enable;
-        private String apiKey;
-        private String model;
-        private Double temperature;
-        private Integer maxTokens;
-        private Double topP;
-    }
 
     @Data
     public static class HunYuan {

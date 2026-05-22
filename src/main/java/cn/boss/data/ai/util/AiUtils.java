@@ -5,9 +5,6 @@ import cn.hutool.core.util.StrUtil;
 import cn.boss.data.ai.enums.model.AiPlatformEnum;
 import com.alibaba.cloud.ai.dashscope.chat.DashScopeChatOptions;
 import org.springaicommunity.moonshot.MoonshotChatOptions;
-import org.springaicommunity.qianfan.QianFanChatOptions;
-import org.springframework.ai.anthropic.AnthropicChatOptions;
-import org.springframework.ai.azure.openai.AzureOpenAiChatOptions;
 import org.springframework.ai.chat.messages.*;
 import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.chat.prompt.ChatOptions;
@@ -40,10 +37,7 @@ public class AiUtils {
                 return DashScopeChatOptions.builder().withModel(model).withTemperature(temperature).withMaxToken(maxTokens)
                         .withEnableThinking(true)
                         .withToolCallbacks(toolCallbacks).withToolContext(toolContext).build();
-            case YI_YAN:
-                return QianFanChatOptions.builder().model(model).temperature(temperature).maxTokens(maxTokens).build();
             case DEEP_SEEK:
-            case DOU_BAO:
             case HUN_YUAN:
             case SILICON_FLOW:
             case XING_HUO:
@@ -59,16 +53,9 @@ public class AiUtils {
                 return MoonshotChatOptions.builder().model(model).temperature(temperature).maxTokens(maxTokens)
                         .toolCallbacks(toolCallbacks).toolContext(toolContext).build();
             case OPENAI:
-            case GEMINI:
             case BAI_CHUAN:
             case GROK:
                 return OpenAiChatOptions.builder().model(model).temperature(temperature).maxTokens(maxTokens)
-                        .toolCallbacks(toolCallbacks).toolContext(toolContext).build();
-            case AZURE_OPENAI:
-                return AzureOpenAiChatOptions.builder().deploymentName(model).temperature(temperature).maxTokens(maxTokens)
-                        .toolCallbacks(toolCallbacks).toolContext(toolContext).build();
-            case ANTHROPIC:
-                return AnthropicChatOptions.builder().model(model).temperature(temperature).maxTokens(maxTokens)
                         .toolCallbacks(toolCallbacks).toolContext(toolContext).build();
             case OLLAMA:
                 return OllamaChatOptions.builder().model(model).temperature(temperature).numPredict(maxTokens)
