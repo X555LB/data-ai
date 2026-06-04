@@ -7,16 +7,11 @@
 - [AiModelFactory.java](file://src/main/java/cn/boss/data/ai/framework/ai/core/model/AiModelFactory.java)
 - [AiModelFactoryImpl.java](file://src/main/java/cn/boss/data/ai/framework/ai/core/model/AiModelFactoryImpl.java)
 - [AiPlatformEnum.java](file://src/main/java/cn/boss/data/ai/enums/model/AiPlatformEnum.java)
-- [GeminiChatModel.java](file://src/main/java/cn/boss/data/ai/framework/ai/core/model/gemini/GeminiChatModel.java)
-- [DouBaoChatModel.java](file://src/main/java/cn/boss/data/ai/framework/ai/core/model/doubao/DouBaoChatModel.java)
-- [XingHuoChatModel.java](file://src/main/java/cn/boss/data/ai/framework/ai/core/model/xinghuo/XingHuoChatModel.java)
-- [HunYuanChatModel.java](file://src/main/java/cn/boss/data/ai/framework/ai/core/model/hunyuan/HunYuanChatModel.java)
-- [SiliconFlowChatModel.java](file://src/main/java/cn/boss/data/ai/framework/ai/core/model/siliconflow/SiliconFlowChatModel.java)
-- [BaiChuanChatModel.java](file://src/main/java/cn/boss/data/ai/framework/ai/core/model/baichuan/BaiChuanChatModel.java)
-- [GrokChatModel.java](file://src/main/java/cn/boss/data/ai/framework/ai/core/model/grok/GrokChatModel.java)
 - [application.yml](file://src/main/resources/application.yml)
 - [AiWebSearchClient.java](file://src/main/java/cn/boss/data/ai/framework/ai/core/websearch/AiWebSearchClient.java)
 - [AiWebSearchRequest.java](file://src/main/java/cn/boss/data/ai/framework/ai/core/websearch/AiWebSearchRequest.java)
+- [AiUtils.java](file://src/main/java/cn/boss/data/ai/util/AiUtils.java)
+- [AiModelServiceImpl.java](file://src/main/java/cn/boss/data/ai/service/model/AiModelServiceImpl.java)
 </cite>
 
 ## 目录
@@ -32,7 +27,7 @@
 10. [附录](#附录)
 
 ## 简介
-本技术文档面向AI平台集成场景，系统化阐述项目对多家国内外大模型平台的统一接入与抽象实现，覆盖以下平台：Baichuan、Doubao、Gemini、Grok、HunYuan、SiliconFlow、XingHuo 等。文档从架构设计、统一接口、配置管理、动态启用、参数封装、响应与错误处理、新增平台扩展等方面进行全面说明，并提供可操作的配置示例与最佳实践。
+本技术文档面向AI平台集成场景，系统化阐述项目对多家国内外大模型平台的统一接入与抽象实现，覆盖以下平台：通义、DeepSeek、OpenAI、Ollama 等。文档从架构设计、统一接口、配置管理、动态启用、参数封装、响应与错误处理、新增平台扩展等方面进行全面说明，并提供可操作的配置示例与最佳实践。
 
 ## 项目结构
 项目采用分层+按功能域划分的组织方式：
@@ -53,44 +48,35 @@ AF["AiModelFactory<br/>接口"]
 AFImpl["AiModelFactoryImpl<br/>实现与缓存"]
 end
 subgraph "平台适配层"
-GEM["GeminiChatModel"]
-DOUB["DouBaoChatModel"]
-HUNY["HunYuanChatModel"]
-SIL["SiliconFlowChatModel"]
-XH["XingHuoChatModel"]
-BC["BaiChuanChatModel"]
-GR["GrokChatModel"]
+TY["通义千问"]
+DS["DeepSeek"]
+OA["OpenAI"]
+OL["Ollama"]
 end
 subgraph "应用层"
 APP["application.yml<br/>平台开关与默认值"]
 end
 AP --> AC
-AC --> GEM
-AC --> DOUB
-AC --> HUNY
-AC --> SIL
-AC --> XH
-AC --> BC
-AC --> GR
+AC --> TY
+AC --> DS
+AC --> OA
+AC --> OL
 AF --> AFImpl
-AFImpl --> GEM
-AFImpl --> DOUB
-AFImpl --> HUNY
-AFImpl --> SIL
-AFImpl --> XH
-AFImpl --> BC
-AFImpl --> GR
+AFImpl --> TY
+AFImpl --> DS
+AFImpl --> OA
+AFImpl --> OL
 APP --> AC
 ```
 
-图表来源
+**图表来源**
 - [AiAutoConfiguration.java:1-286](file://src/main/java/cn/boss/data/ai/framework/ai/config/AiAutoConfiguration.java#L1-L286)
 - [AiProperties.java:1-134](file://src/main/java/cn/boss/data/ai/framework/ai/config/AiProperties.java#L1-L134)
 - [AiModelFactory.java:1-63](file://src/main/java/cn/boss/data/ai/framework/ai/core/model/AiModelFactory.java#L1-L63)
 - [AiModelFactoryImpl.java:1-568](file://src/main/java/cn/boss/data/ai/framework/ai/core/model/AiModelFactoryImpl.java#L1-L568)
 - [application.yml:150-190](file://src/main/resources/application.yml#L150-L190)
 
-章节来源
+**章节来源**
 - [AiAutoConfiguration.java:1-286](file://src/main/java/cn/boss/data/ai/framework/ai/config/AiAutoConfiguration.java#L1-L286)
 - [AiProperties.java:1-134](file://src/main/java/cn/boss/data/ai/framework/ai/config/AiProperties.java#L1-L134)
 - [application.yml:150-190](file://src/main/resources/application.yml#L150-L190)
@@ -107,13 +93,13 @@ APP --> AC
 - 平台枚举
   - AiPlatformEnum：统一平台标识，便于工厂与上层调用识别
 
-章节来源
+**章节来源**
 - [AiModelFactory.java:1-63](file://src/main/java/cn/boss/data/ai/framework/ai/core/model/AiModelFactory.java#L1-L63)
 - [AiModelFactoryImpl.java:1-568](file://src/main/java/cn/boss/data/ai/framework/ai/core/model/AiModelFactoryImpl.java#L1-L568)
 - [AiPlatformEnum.java:1-71](file://src/main/java/cn/boss/data/ai/enums/model/AiPlatformEnum.java#L1-L71)
 
 ## 架构总览
-整体采用“配置驱动 + 工厂 + 适配器”的架构：
+整体采用"配置驱动 + 工厂 + 适配器"的架构：
 - 配置驱动：通过application.yml中的boss.ai.*开关与参数决定启用哪些平台
 - 工厂统一：AiModelFactory统一对外暴露平台能力；AiModelFactoryImpl负责具体构建与缓存
 - 适配器模式：各平台以ChatModel实现，屏蔽底层API差异，统一调用
@@ -132,7 +118,7 @@ P-->>F : 统一ChatResponse/Flux
 F-->>C : 返回统一模型对象
 ```
 
-图表来源
+**图表来源**
 - [AiModelFactoryImpl.java:115-200](file://src/main/java/cn/boss/data/ai/framework/ai/core/model/AiModelFactoryImpl.java#L115-L200)
 - [AiAutoConfiguration.java:52-286](file://src/main/java/cn/boss/data/ai/framework/ai/config/AiAutoConfiguration.java#L52-L286)
 
@@ -142,11 +128,12 @@ F-->>C : 返回统一模型对象
 - AiProperties集中绑定boss.ai.*前缀下的各平台配置项，如enable、api-key、model、温度、最大token、topP等
 - AiAutoConfiguration基于@ConditionalOnProperty按平台开关创建Bean，若未显式设置model则回退到平台默认值
 - 支持多种底层模型客户端：
-  - OpenAI风格：Gemini、DouBao、BaiChuan、XingHuo（部分版本）
-  - DeepSeek风格：SiliconFlow、HunYuan（根据模型前缀选择不同基础URL）
-  - Grok：自定义OpenAI兼容路径
+  - 通义：DashScope
+  - DeepSeek：DeepSeek
+  - OpenAI：OpenAI官方
+  - Ollama：本地推理引擎
 
-章节来源
+**章节来源**
 - [AiProperties.java:13-134](file://src/main/java/cn/boss/data/ai/framework/ai/config/AiProperties.java#L13-L134)
 - [AiAutoConfiguration.java:52-286](file://src/main/java/cn/boss/data/ai/framework/ai/config/AiAutoConfiguration.java#L52-L286)
 
@@ -157,8 +144,8 @@ F-->>C : 返回统一模型对象
   - 向量化与嵌入：getOrCreateEmbeddingModel、getOrCreateVectorStore
 - 工厂实现：
   - 使用单例缓存避免重复创建
-  - 针对不同平台分支构建底层模型（DashScope、QianFan、DeepSeek、ZhiPu、MiniMax、Moonshot、OpenAI、AzureOpenAI、Anthropic、Ollama、Grok等）
-  - 对部分平台（如XingHuo、DouBao、HunYuan、SiliconFlow、BaiChuan、Gemini、Grok）通过AiAutoConfiguration辅助构建
+  - 针对不同平台分支构建底层模型（DashScope、DeepSeek、OpenAI、Ollama）
+  - 对部分平台通过AiAutoConfiguration辅助构建
 
 ```mermaid
 classDiagram
@@ -174,111 +161,75 @@ class AiModelFactoryImpl {
 +getOrCreateEmbeddingModel(...)
 +getOrCreateVectorStore(...)
 }
-class GeminiChatModel
-class DouBaoChatModel
-class HunYuanChatModel
-class SiliconFlowChatModel
-class XingHuoChatModel
-class BaiChuanChatModel
-class GrokChatModel
+class 通义千问
+class DeepSeek
+class OpenAI
+class Ollama
 AiModelFactory <|.. AiModelFactoryImpl
-AiModelFactoryImpl --> GeminiChatModel : "构建/缓存"
-AiModelFactoryImpl --> DouBaoChatModel
-AiModelFactoryImpl --> HunYuanChatModel
-AiModelFactoryImpl --> SiliconFlowChatModel
-AiModelFactoryImpl --> XingHuoChatModel
-AiModelFactoryImpl --> BaiChuanChatModel
-AiModelFactoryImpl --> GrokChatModel
+AiModelFactoryImpl --> 通义千问 : "构建/缓存"
+AiModelFactoryImpl --> DeepSeek
+AiModelFactoryImpl --> OpenAI
+AiModelFactoryImpl --> Ollama
 ```
 
-图表来源
+**图表来源**
 - [AiModelFactory.java:13-62](file://src/main/java/cn/boss/data/ai/framework/ai/core/model/AiModelFactory.java#L13-L62)
 - [AiModelFactoryImpl.java:113-245](file://src/main/java/cn/boss/data/ai/framework/ai/core/model/AiModelFactoryImpl.java#L113-L245)
-- [GeminiChatModel.java:17-41](file://src/main/java/cn/boss/data/ai/framework/ai/core/model/gemini/GeminiChatModel.java#L17-L41)
-- [DouBaoChatModel.java:16-40](file://src/main/java/cn/boss/data/ai/framework/ai/core/model/doubao/DouBaoChatModel.java#L16-L40)
-- [HunYuanChatModel.java:16-44](file://src/main/java/cn/boss/data/ai/framework/ai/core/model/hunyuan/HunYuanChatModel.java#L16-L44)
-- [SiliconFlowChatModel.java:16-35](file://src/main/java/cn/boss/data/ai/framework/ai/core/model/siliconflow/SiliconFlowChatModel.java#L16-L35)
-- [XingHuoChatModel.java:16-42](file://src/main/java/cn/boss/data/ai/framework/ai/core/model/xinghuo/XingHuoChatModel.java#L16-L42)
-- [BaiChuanChatModel.java:17-40](file://src/main/java/cn/boss/data/ai/framework/ai/core/model/baichuan/BaiChuanChatModel.java#L17-L40)
-- [GrokChatModel.java:16-39](file://src/main/java/cn/boss/data/ai/framework/ai/core/model/grok/GrokChatModel.java#L16-L39)
 
-章节来源
+**章节来源**
 - [AiModelFactory.java:13-62](file://src/main/java/cn/boss/data/ai/framework/ai/core/model/AiModelFactory.java#L13-L62)
 - [AiModelFactoryImpl.java:113-245](file://src/main/java/cn/boss/data/ai/framework/ai/core/model/AiModelFactoryImpl.java#L113-L245)
 
 ### 平台适配器与差异处理
 
-#### Baichuan（百川智能）
-- 基础URL与默认模型常量定义
-- 通过OpenAI风格封装，统一call/stream/defaultOptions
+#### 通义千问（TongYi）
+- 基于DashScope API封装，支持工具调用
+- 默认模型与温度参数配置
+- 工具回调管理集成
 
-章节来源
-- [BaiChuanChatModel.java:17-40](file://src/main/java/cn/boss/data/ai/framework/ai/core/model/baichuan/BaiChuanChatModel.java#L17-L40)
-- [AiAutoConfiguration.java:212-237](file://src/main/java/cn/boss/data/ai/framework/ai/config/AiAutoConfiguration.java#L212-L237)
+**章节来源**
+- [AiModelFactoryImpl.java:155-165](file://src/main/java/cn/boss/data/ai/framework/ai/core/model/AiModelFactoryImpl.java#L155-L165)
 
-#### Doubao（字节豆包）
-- 基础URL与补全路径常量
-- 通过OpenAI风格封装，支持默认模型回退
+#### DeepSeek
+- 基于DeepSeek API封装
+- 支持自定义模型与温度配置
+- 工具调用管理集成
 
-章节来源
-- [DouBaoChatModel.java:16-40](file://src/main/java/cn/boss/data/ai/framework/ai/core/model/doubao/DouBaoChatModel.java#L16-L40)
-- [AiAutoConfiguration.java:93-119](file://src/main/java/cn/boss/data/ai/framework/ai/config/AiAutoConfiguration.java#L93-L119)
+**章节来源**
+- [AiModelFactoryImpl.java:166-176](file://src/main/java/cn/boss/data/ai/framework/ai/core/model/AiModelFactoryImpl.java#L166-L176)
 
-#### Gemini（谷歌Gemini）
-- 以OpenAI兼容路径对接，统一参数传递
-- 默认模型与基础URL常量
+#### OpenAI
+- 基于OpenAI API封装，支持自定义base-url
+- 默认使用OpenAI官方base-url
+- 工具调用管理集成
 
-章节来源
-- [GeminiChatModel.java:17-41](file://src/main/java/cn/boss/data/ai/framework/ai/core/model/gemini/GeminiChatModel.java#L17-L41)
-- [AiAutoConfiguration.java:65-91](file://src/main/java/cn/boss/data/ai/framework/ai/config/AiAutoConfiguration.java#L65-L91)
+**章节来源**
+- [AiModelFactoryImpl.java:177-185](file://src/main/java/cn/boss/data/ai/framework/ai/core/model/AiModelFactoryImpl.java#L177-L185)
 
-#### Grok
-- OpenAI兼容路径与默认模型
-- 支持可选自定义base-url
+#### Ollama
+- 基于Ollama API封装，支持本地推理
+- 默认使用本地Ollama服务
+- 工具调用管理集成
 
-章节来源
-- [GrokChatModel.java:16-39](file://src/main/java/cn/boss/data/ai/framework/ai/core/model/grok/GrokChatModel.java#L16-L39)
-- [AiAutoConfiguration.java:239-259](file://src/main/java/cn/boss/data/ai/framework/ai/config/AiAutoConfiguration.java#L239-L259)
-
-#### HunYuan（腾讯混元）
-- 根据模型前缀动态选择基础URL（普通/DeepSeek）
-- 默认模型与补全路径常量
-
-章节来源
-- [HunYuanChatModel.java:16-44](file://src/main/java/cn/boss/data/ai/framework/ai/core/model/hunyuan/HunYuanChatModel.java#L16-L44)
-- [AiAutoConfiguration.java:148-179](file://src/main/java/cn/boss/data/ai/framework/ai/config/AiAutoConfiguration.java#L148-L179)
-
-#### SiliconFlow
-- 以DeepSeek风格封装，统一默认模型与参数
-- 常量定义基础URL与默认模型
-
-章节来源
-- [SiliconFlowChatModel.java:16-35](file://src/main/java/cn/boss/data/ai/framework/ai/core/model/siliconflow/SiliconFlowChatModel.java#L16-L35)
-- [AiAutoConfiguration.java:121-146](file://src/main/java/cn/boss/data/ai/framework/ai/config/AiAutoConfiguration.java#L121-L146)
-
-#### XingHuo（讯飞星火）
-- v1与v2两个基础URL与补全路径
-- 支持根据model选择v1/v2路径
-- 认证方式为appKey:secretKey拼接
-
-章节来源
-- [XingHuoChatModel.java:16-42](file://src/main/java/cn/boss/data/ai/framework/ai/core/model/xinghuo/XingHuoChatModel.java#L16-L42)
-- [AiAutoConfiguration.java:181-210](file://src/main/java/cn/boss/data/ai/framework/ai/config/AiAutoConfiguration.java#L181-L210)
+**章节来源**
+- [AiModelFactoryImpl.java:186-193](file://src/main/java/cn/boss/data/ai/framework/ai/core/model/AiModelFactoryImpl.java#L186-L193)
 
 ### 参数配置、认证与使用限制
 - 配置项
   - enable：是否启用该平台
-  - api-key/base-url/app-id/app-key/secret-key：认证与端点
+  - api-key/base-url：认证与端点配置
   - model：模型名（未设置时回退到平台默认）
   - temperature/maxTokens/topP：推理参数
 - 认证方式
-  - 多数平台使用api-key
-  - XingHuo使用appKey与secretKey拼接
+  - 通义：DashScope API Key
+  - DeepSeek：DeepSeek API Key
+  - OpenAI：OpenAI API Key
+  - Ollama：无需认证
 - 使用限制
   - 不同平台对模型名、温度、最大token等参数范围存在约束，建议遵循平台文档
   - 流式输出由底层模型支持，统一通过stream接口返回
 
-章节来源
+**章节来源**
 - [AiProperties.java:54-125](file://src/main/java/cn/boss/data/ai/framework/ai/config/AiProperties.java#L54-L125)
 - [AiAutoConfiguration.java:65-259](file://src/main/java/cn/boss/data/ai/framework/ai/config/AiAutoConfiguration.java#L65-L259)
 
@@ -291,14 +242,8 @@ AiModelFactoryImpl --> GrokChatModel
 - 建议
   - 在控制器或服务层增加统一异常拦截，结合ErrorCodeConstants进行标准化输出
 
-章节来源
-- [GeminiChatModel.java:26-39](file://src/main/java/cn/boss/data/ai/framework/ai/core/model/gemini/GeminiChatModel.java#L26-L39)
-- [DouBaoChatModel.java:25-38](file://src/main/java/cn/boss/data/ai/framework/ai/core/model/doubao/DouBaoChatModel.java#L25-L38)
-- [XingHuoChatModel.java:27-40](file://src/main/java/cn/boss/data/ai/framework/ai/core/model/xinghuo/XingHuoChatModel.java#L27-L40)
-- [HunYuanChatModel.java:29-42](file://src/main/java/cn/boss/data/ai/framework/ai/core/model/hunyuan/HunYuanChatModel.java#L29-L42)
-- [SiliconFlowChatModel.java:20-33](file://src/main/java/cn/boss/data/ai/framework/ai/core/model/siliconflow/SiliconFlowChatModel.java#L20-L33)
-- [BaiChuanChatModel.java:25-38](file://src/main/java/cn/boss/data/ai/framework/ai/core/model/baichuan/BaiChuanChatModel.java#L25-L38)
-- [GrokChatModel.java:24-37](file://src/main/java/cn/boss/data/ai/framework/ai/core/model/grok/GrokChatModel.java#L24-L37)
+**章节来源**
+- [AiModelFactoryImpl.java:155-193](file://src/main/java/cn/boss/data/ai/framework/ai/core/model/AiModelFactoryImpl.java#L155-L193)
 
 ### 动态配置与平台切换
 - 动态启用
@@ -311,14 +256,14 @@ AiModelFactoryImpl --> GrokChatModel
   - 当前实现未内置多实例轮询；可通过外部网关或服务发现实现
   - 工厂层已具备多实例缓存能力，便于后续扩展
 
-章节来源
+**章节来源**
 - [AiAutoConfiguration.java:52-286](file://src/main/java/cn/boss/data/ai/framework/ai/config/AiAutoConfiguration.java#L52-L286)
 - [AiModelFactoryImpl.java:162-200](file://src/main/java/cn/boss/data/ai/framework/ai/core/model/AiModelFactoryImpl.java#L162-L200)
 
 ### 新增AI平台支持（适配器模式与配置管理最佳实践）
 - 适配器模式
   - 新增平台实现ChatModel接口，封装底层API调用
-  - 若与OpenAI兼容，可复用OpenAI风格封装；否则参考SiliconFlow/DeepSeek风格
+  - 参考现有平台的构建模式，统一参数映射与流式输出
 - 配置管理
   - 在AiProperties中新增子类字段与默认值
   - 在AiAutoConfiguration中新增@Bean与构建方法
@@ -329,7 +274,7 @@ AiModelFactoryImpl --> GrokChatModel
   - 保持统一的参数映射与流式输出
   - 单元测试覆盖关键分支（认证、参数、异常）
 
-章节来源
+**章节来源**
 - [AiProperties.java:13-134](file://src/main/java/cn/boss/data/ai/framework/ai/config/AiProperties.java#L13-L134)
 - [AiAutoConfiguration.java:52-286](file://src/main/java/cn/boss/data/ai/framework/ai/config/AiAutoConfiguration.java#L52-L286)
 - [AiPlatformEnum.java:14-70](file://src/main/java/cn/boss/data/ai/enums/model/AiPlatformEnum.java#L14-L70)
@@ -342,7 +287,7 @@ AiModelFactoryImpl --> GrokChatModel
   - AiAutoConfiguration按boss.ai.web-search.enable开关创建AiBoChaWebSearchClient实现
   - 可扩展为更多搜索引擎实现
 
-章节来源
+**章节来源**
 - [AiWebSearchClient.java:6-16](file://src/main/java/cn/boss/data/ai/framework/ai/core/websearch/AiWebSearchClient.java#L6-L16)
 - [AiWebSearchRequest.java:10-31](file://src/main/java/cn/boss/data/ai/framework/ai/core/websearch/AiWebSearchRequest.java#L10-L31)
 - [AiAutoConfiguration.java:279-283](file://src/main/java/cn/boss/data/ai/framework/ai/config/AiAutoConfiguration.java#L279-L283)
@@ -350,32 +295,25 @@ AiModelFactoryImpl --> GrokChatModel
 ## 依赖分析
 - 组件耦合
   - 工厂实现依赖平台适配器与AiAutoConfiguration
-  - 平台适配器依赖底层Spring AI模型或OpenAI兼容封装
+  - 平台适配器依赖底层Spring AI模型
 - 外部依赖
-  - Spring AI生态（OpenAI、AzureOpenAI、DeepSeek、Anthropic、Ollama等）
-  - 第三方SDK（DashScope、QianFan、ZhiPu、MiniMax、Moonshot等）
+  - Spring AI生态（DashScope、DeepSeek、OpenAI、Ollama等）
 - 循环依赖
   - 未见循环依赖迹象；工厂与适配器职责清晰
 
 ```mermaid
 graph LR
-AFImpl["AiModelFactoryImpl"] --> GEM["GeminiChatModel"]
-AFImpl --> DOUB["DouBaoChatModel"]
-AFImpl --> HUNY["HunYuanChatModel"]
-AFImpl --> SIL["SiliconFlowChatModel"]
-AFImpl --> XH["XingHuoChatModel"]
-AFImpl --> BC["BaiChuanChatModel"]
-AFImpl --> GR["GrokChatModel"]
-AC["AiAutoConfiguration"] --> GEM
-AC --> DOUB
-AC --> HUNY
-AC --> SIL
-AC --> XH
-AC --> BC
-AC --> GR
+AFImpl["AiModelFactoryImpl"] --> TY["通义千问"]
+AFImpl --> DS["DeepSeek"]
+AFImpl --> OA["OpenAI"]
+AFImpl --> OL["Ollama"]
+AC["AiAutoConfiguration"] --> TY
+AC --> DS
+AC --> OA
+AC --> OL
 ```
 
-图表来源
+**图表来源**
 - [AiModelFactoryImpl.java:113-245](file://src/main/java/cn/boss/data/ai/framework/ai/core/model/AiModelFactoryImpl.java#L113-L245)
 - [AiAutoConfiguration.java:52-286](file://src/main/java/cn/boss/data/ai/framework/ai/config/AiAutoConfiguration.java#L52-L286)
 
@@ -393,15 +331,15 @@ AC --> GR
 - 平台未启用
   - 检查boss.ai.<platform>.enable是否为true
 - 认证失败
-  - 确认api-key/appKey/secretKey正确；XingHuo需使用appKey:secretKey拼接
+  - 确认api-key正确；Ollama无需认证
 - 模型不可用
   - 检查model是否在平台可用列表；未设置时回退到平台默认
 - 端点异常
-  - 检查base-url是否正确；部分平台（如HunYuan、Grok）支持自定义base-url
+  - 检查base-url是否正确；OpenAI支持自定义base-url
 - 流式输出问题
   - 确保客户端正确消费Flux流；服务端日志级别可调整至DEBUG定位
 
-章节来源
+**章节来源**
 - [application.yml:150-190](file://src/main/resources/application.yml#L150-L190)
 - [AiAutoConfiguration.java:65-259](file://src/main/java/cn/boss/data/ai/framework/ai/config/AiAutoConfiguration.java#L65-L259)
 
@@ -411,34 +349,32 @@ AC --> GR
 ## 附录
 
 ### 平台配置示例（摘自application.yml）
-- Gemini
-  - boss.ai.gemini.enable: true
-  - boss.ai.gemini.api-key: <你的密钥>
-  - boss.ai.gemini.model: gemini-2.5-flash
-- Doubao
-  - boss.ai.doubao.enable: true
-  - boss.ai.doubao.api-key: <你的密钥>
-  - boss.ai.doubao.model: doubao-1-5-lite-32k-250115
-- HunYuan
-  - boss.ai.hunyuan.enable: true
-  - boss.ai.hunyuan.api-key: <你的密钥>
-  - boss.ai.hunyuan.model: hunyuan-turbo
-- SiliconFlow
-  - boss.ai.siliconflow.enable: true
-  - boss.ai.siliconflow.api-key: <你的密钥>
-  - boss.ai.siliconflow.model: deepseek-ai/DeepSeek-R1-Distill-Qwen-7B
-- XingHuo
-  - boss.ai.xinghuo.enable: true
-  - boss.ai.xinghuo.appKey: <你的appKey>
-  - boss.ai.xinghuo.secretKey: <你的secretKey>
-  - boss.ai.xinghuo.model: x1
-- Baichuan
-  - boss.ai.baichuan.enable: true
-  - boss.ai.baichuan.api-key: <你的密钥>
-  - boss.ai.baichuan.model: Baichuan4-Turbo
-- Web Search
-  - boss.ai.web-search.enable: true
-  - boss.ai.web-search.api-key: <你的密钥>
+- 通义千问
+  - boss.ai.tongyi.enable: true
+  - boss.ai.tongyi.api-key: <你的密钥>
+  - boss.ai.tongyi.model: qwen-plus
+- DeepSeek
+  - boss.ai.deepseek.enable: true
+  - boss.ai.deepseek.api-key: <你的密钥>
+  - boss.ai.deepseek.model: deepseek-chat
+- OpenAI
+  - boss.ai.openai.enable: true
+  - boss.ai.openai.api-key: <你的密钥>
+  - boss.ai.openai.base-url: https://api.openai.com/v1
+  - boss.ai.openai.model: gpt-3.5-turbo
+- Ollama
+  - boss.ai.ollama.enable: true
+  - boss.ai.ollama.base-url: http://localhost:11434
+  - boss.ai.ollama.model: llama3
 
-章节来源
+**章节来源**
 - [application.yml:150-190](file://src/main/resources/application.yml#L150-L190)
+
+### 平台参数映射（AiUtils）
+- 通义：DashScopeChatOptions.builder().withModel(model).withTemperature(temperature).withMaxToken(maxTokens)
+- DeepSeek：DeepSeekChatOptions.builder().model(model).temperature(temperature).maxTokens(maxTokens)
+- OpenAI：OpenAiChatOptions.builder().model(model).temperature(temperature).maxTokens(maxTokens)
+- Ollama：OllamaChatOptions.builder().model(model).temperature(temperature).numPredict(maxTokens)
+
+**章节来源**
+- [AiUtils.java:30-52](file://src/main/java/cn/boss/data/ai/util/AiUtils.java#L30-L52)

@@ -4,17 +4,14 @@ import cn.hutool.core.util.ObjUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.boss.data.ai.enums.model.AiPlatformEnum;
 import com.alibaba.cloud.ai.dashscope.chat.DashScopeChatOptions;
-import org.springaicommunity.moonshot.MoonshotChatOptions;
 import org.springframework.ai.chat.messages.*;
 import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.chat.prompt.ChatOptions;
 import org.springframework.ai.deepseek.DeepSeekAssistantMessage;
 import org.springframework.ai.deepseek.DeepSeekChatOptions;
-import org.springframework.ai.minimax.MiniMaxChatOptions;
 import org.springframework.ai.ollama.api.OllamaChatOptions;
 import org.springframework.ai.openai.OpenAiChatOptions;
 import org.springframework.ai.tool.ToolCallback;
-import org.springframework.ai.zhipuai.ZhiPuAiChatOptions;
 
 import java.util.*;
 
@@ -38,23 +35,9 @@ public class AiUtils {
                         .withEnableThinking(true)
                         .withToolCallbacks(toolCallbacks).withToolContext(toolContext).build();
             case DEEP_SEEK:
-            case HUN_YUAN:
-            case SILICON_FLOW:
-            case XING_HUO:
                 return DeepSeekChatOptions.builder().model(model).temperature(temperature).maxTokens(maxTokens)
                         .toolCallbacks(toolCallbacks).toolContext(toolContext).build();
-            case ZHI_PU:
-                return ZhiPuAiChatOptions.builder().model(model).temperature(temperature).maxTokens(maxTokens)
-                        .toolCallbacks(toolCallbacks).toolContext(toolContext).build();
-            case MINI_MAX:
-                return MiniMaxChatOptions.builder().model(model).temperature(temperature).maxTokens(maxTokens)
-                        .toolCallbacks(toolCallbacks).toolContext(toolContext).build();
-            case MOONSHOT:
-                return MoonshotChatOptions.builder().model(model).temperature(temperature).maxTokens(maxTokens)
-                        .toolCallbacks(toolCallbacks).toolContext(toolContext).build();
             case OPENAI:
-            case BAI_CHUAN:
-            case GROK:
                 return OpenAiChatOptions.builder().model(model).temperature(temperature).maxTokens(maxTokens)
                         .toolCallbacks(toolCallbacks).toolContext(toolContext).build();
             case OLLAMA:

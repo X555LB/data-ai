@@ -8,10 +8,9 @@
 
 核心能力：
 
-- **多模型聊天对话**：统一接入通义千问、文心一言、DeepSeek、智谱、讯飞星火、混元、硅基流动、MiniMax、Moonshot、百川、OpenAI、Azure OpenAI、Anthropic、Gemini、Ollama、Grok 等国内外主流大模型
+- **多模型聊天对话**：统一接入通义千问、DeepSeek、OpenAI、Ollama 等国内外主流大模型
 - **知识库（RAG）**：文档上传解析、段落切分、向量化、向量检索（Qdrant / Redis / Milvus 三选一）
 - **工具调用**：Spring AI Function Calling + MCP Server / Client
-- **多媒体生成**：图片（Midjourney）、音乐（Suno）
 
 ## 2. 技术栈
 

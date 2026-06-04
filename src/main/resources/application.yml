@@ -97,8 +97,6 @@ spring:
         client:
           host: 127.0.0.1
           port: 19530
-    zhipuai: # 智谱 AI
-      api-key: your-zhipuai-api-key
     openai: # OpenAI 官方
       api-key: your-openai-api-key
       base-url: https://api.gptsapi.net
@@ -108,10 +106,6 @@ spring:
         model: llama3
     dashscope: # 通义千问
       api-key: your-dashscope-api-key
-    minimax: # Minimax：https://www.minimaxi.com/
-      api-key: xxxx
-    moonshot: # 月之暗面（KIMI）
-      api-key: sk-abc
     deepseek: # DeepSeek
       api-key: your-deepseek-api-key
       chat:
@@ -139,33 +133,6 @@ spring:
 
 boss:
   ai:
-    hunyuan: # 腾讯混元
-      enable: true
-      api-key: your-hunyuan-api-key
-      model: hunyuan-turbo
-    siliconflow: # 硅基流动
-      enable: true
-      api-key: your-siliconflow-api-key
-      model: deepseek-ai/DeepSeek-R1-Distill-Qwen-7B
-    xinghuo: # 讯飞星火
-      enable: true
-      appKey: your-xinghuo-app-key
-      secretKey: your-xinghuo-secret-key
-      model: x1
-    baichuan: # 百川智能
-      enable: true
-      api-key: your-baichuan-api-key
-      model: Baichuan4-Turbo
-    midjourney:
-      enable: true
-      #    base-url: https://api.holdai.top/mj-relax/mj
-      base-url: https://api.holdai.top/mj
-      api-key: your-midjourney-api-key
-      notify-url: http://java.nat300.top/admin-api/ai/image/midjourney/notify
-    suno:
-      enable: true
-      #    base-url: https://suno-55ishh05u-status2xxs-projects.vercel.app
-      base-url: http://127.0.0.1:3001
     web-search:
       enable: true
       api-key: your-web-search-api-key

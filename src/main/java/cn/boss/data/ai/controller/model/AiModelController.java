@@ -70,7 +70,7 @@ public class AiModelController {
     @GetMapping("/simple-list")
     @Operation(summary = "获得模型列表")
     @Parameter(name = "type", description = "类型", required = true, example = "1")
-    @Parameter(name = "platform", description = "平台", example = "midjourney")
+    @Parameter(name = "platform", description = "平台", example = "deepseek")
     public CommonResult<List<AiModelRespVO>> getModelSimpleList(
             @RequestParam("type") Integer type,
             @RequestParam(value = "platform", required = false) String platform) {

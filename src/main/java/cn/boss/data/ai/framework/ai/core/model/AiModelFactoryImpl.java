@@ -1,7 +1,6 @@
 package cn.boss.data.ai.framework.ai.core.model;
 
 import cn.hutool.core.io.FileUtil;
-import cn.hutool.core.lang.Assert;
 import cn.hutool.core.lang.Singleton;
 import cn.hutool.core.lang.func.Func0;
 import cn.hutool.core.util.ArrayUtil;
@@ -9,13 +8,6 @@ import cn.hutool.core.util.RuntimeUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.boss.data.ai.framework.common.util.spring.SpringUtils;
 import cn.boss.data.ai.enums.model.AiPlatformEnum;
-import cn.boss.data.ai.framework.ai.config.AiAutoConfiguration;
-import cn.boss.data.ai.framework.ai.config.AiProperties;
-import cn.boss.data.ai.framework.ai.core.model.baichuan.BaiChuanChatModel;
-import cn.boss.data.ai.framework.ai.core.model.hunyuan.HunYuanChatModel;
-import cn.boss.data.ai.framework.ai.core.model.siliconflow.SiliconFlowApiConstants;
-import cn.boss.data.ai.framework.ai.core.model.siliconflow.SiliconFlowChatModel;
-import cn.boss.data.ai.framework.ai.core.model.xinghuo.XingHuoChatModel;
 import com.alibaba.cloud.ai.autoconfigure.dashscope.DashScopeChatAutoConfiguration;
 import com.alibaba.cloud.ai.autoconfigure.dashscope.DashScopeEmbeddingAutoConfiguration;
 import com.alibaba.cloud.ai.dashscope.api.DashScopeApi;
@@ -27,10 +19,6 @@ import io.micrometer.observation.ObservationRegistry;
 import io.qdrant.client.QdrantClient;
 import io.qdrant.client.QdrantGrpcClient;
 import lombok.SneakyThrows;
-import org.springaicommunity.moonshot.MoonshotChatModel;
-import org.springaicommunity.moonshot.MoonshotChatOptions;
-import org.springaicommunity.moonshot.api.MoonshotApi;
-import org.springaicommunity.moonshot.autoconfigure.MoonshotChatAutoConfiguration;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.deepseek.DeepSeekChatModel;
 import org.springframework.ai.deepseek.DeepSeekChatOptions;
@@ -39,20 +27,11 @@ import org.springframework.ai.document.MetadataMode;
 import org.springframework.ai.embedding.BatchingStrategy;
 import org.springframework.ai.embedding.EmbeddingModel;
 import org.springframework.ai.embedding.observation.EmbeddingModelObservationConvention;
-import org.springframework.ai.minimax.MiniMaxChatModel;
-import org.springframework.ai.minimax.MiniMaxChatOptions;
-import org.springframework.ai.minimax.MiniMaxEmbeddingModel;
-import org.springframework.ai.minimax.MiniMaxEmbeddingOptions;
-import org.springframework.ai.minimax.api.MiniMaxApi;
 import org.springframework.ai.model.deepseek.autoconfigure.DeepSeekChatAutoConfiguration;
-import org.springframework.ai.model.minimax.autoconfigure.MiniMaxChatAutoConfiguration;
-import org.springframework.ai.model.minimax.autoconfigure.MiniMaxEmbeddingAutoConfiguration;
 import org.springframework.ai.model.ollama.autoconfigure.OllamaChatAutoConfiguration;
 import org.springframework.ai.model.openai.autoconfigure.OpenAiChatAutoConfiguration;
 import org.springframework.ai.model.openai.autoconfigure.OpenAiEmbeddingAutoConfiguration;
 import org.springframework.ai.model.tool.ToolCallingManager;
-import org.springframework.ai.model.zhipuai.autoconfigure.ZhiPuAiChatAutoConfiguration;
-import org.springframework.ai.model.zhipuai.autoconfigure.ZhiPuAiEmbeddingAutoConfiguration;
 import org.springframework.ai.ollama.OllamaChatModel;
 import org.springframework.ai.ollama.OllamaEmbeddingModel;
 import org.springframework.ai.ollama.api.OllamaApi;
@@ -72,8 +51,6 @@ import org.springframework.ai.vectorstore.qdrant.autoconfigure.QdrantVectorStore
 import org.springframework.ai.vectorstore.redis.RedisVectorStore;
 import org.springframework.ai.vectorstore.redis.autoconfigure.RedisVectorStoreAutoConfiguration;
 import org.springframework.ai.vectorstore.redis.autoconfigure.RedisVectorStoreProperties;
-import org.springframework.ai.zhipuai.*;
-import org.springframework.ai.zhipuai.api.ZhiPuAiApi;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.data.redis.RedisProperties;
@@ -81,7 +58,6 @@ import redis.clients.jedis.JedisPooled;
 
 import java.io.File;
 import java.time.Duration;
-import java.util.List;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -104,26 +80,10 @@ public class AiModelFactoryImpl implements AiModelFactory {
                     return buildTongYiChatModel(apiKey);
                 case DEEP_SEEK:
                     return buildDeepSeekChatModel(apiKey);
-                case HUN_YUAN:
-                    return buildHunYuanChatModel(apiKey, url);
-                case SILICON_FLOW:
-                    return buildSiliconFlowChatModel(apiKey);
-                case ZHI_PU:
-                    return buildZhiPuChatModel(apiKey, url);
-                case MINI_MAX:
-                    return buildMiniMaxChatModel(apiKey, url);
-                case MOONSHOT:
-                    return buildMoonshotChatModel(apiKey, url);
-                case XING_HUO:
-                    return buildXingHuoChatModel(apiKey);
-                case BAI_CHUAN:
-                    return buildBaiChuanChatModel(apiKey);
                 case OPENAI:
                     return buildOpenAiChatModel(apiKey, url);
                 case OLLAMA:
                     return buildOllamaChatModel(url);
-                case GROK:
-                    return buildGrokChatModel(apiKey, url);
                 default:
                     throw new IllegalArgumentException(StrUtil.format("未知平台({})", platform));
             }
@@ -138,20 +98,6 @@ public class AiModelFactoryImpl implements AiModelFactory {
                 return SpringUtils.getBean(DashScopeChatModel.class);
             case DEEP_SEEK:
                 return SpringUtils.getBean(DeepSeekChatModel.class);
-            case HUN_YUAN:
-                return SpringUtils.getBean(HunYuanChatModel.class);
-            case SILICON_FLOW:
-                return SpringUtils.getBean(SiliconFlowChatModel.class);
-            case ZHI_PU:
-                return SpringUtils.getBean(ZhiPuAiChatModel.class);
-            case MINI_MAX:
-                return SpringUtils.getBean(MiniMaxChatModel.class);
-            case MOONSHOT:
-                return SpringUtils.getBean(MoonshotChatModel.class);
-            case XING_HUO:
-                return SpringUtils.getBean(XingHuoChatModel.class);
-            case BAI_CHUAN:
-                return SpringUtils.getBean(BaiChuanChatModel.class);
             case OPENAI:
                 return SpringUtils.getBean(OpenAiChatModel.class);
             case OLLAMA:
@@ -169,10 +115,6 @@ public class AiModelFactoryImpl implements AiModelFactory {
             switch (platform) {
                 case TONG_YI:
                     return buildTongYiEmbeddingModel(apiKey, model);
-                case ZHI_PU:
-                    return buildZhiPuEmbeddingModel(apiKey, url, model);
-                case MINI_MAX:
-                    return buildMiniMaxEmbeddingModel(apiKey, url, model);
                 case OPENAI:
                     return buildOpenAiEmbeddingModel(apiKey, url, model);
                 case OLLAMA:
@@ -233,65 +175,6 @@ public class AiModelFactoryImpl implements AiModelFactory {
                 .build();
     }
 
-    private ChatModel buildHunYuanChatModel(String apiKey, String url) {
-        AiProperties.HunYuan properties = new AiProperties.HunYuan();
-        properties.setBaseUrl(url);
-        properties.setApiKey(apiKey);
-        return new AiAutoConfiguration().buildHunYuanChatClient(properties);
-    }
-
-    private ChatModel buildSiliconFlowChatModel(String apiKey) {
-        AiProperties.SiliconFlow properties = new AiProperties.SiliconFlow();
-        properties.setApiKey(apiKey);
-        return new AiAutoConfiguration().buildSiliconFlowChatClient(properties);
-    }
-
-    private ZhiPuAiChatModel buildZhiPuChatModel(String apiKey, String url) {
-        ZhiPuAiApi.Builder zhiPuAiApiBuilder = ZhiPuAiApi.builder().apiKey(apiKey);
-        if (StrUtil.isNotEmpty(url)) {
-            zhiPuAiApiBuilder.baseUrl(url);
-        }
-        ZhiPuAiChatOptions options = ZhiPuAiChatOptions.builder().model(ZhiPuAiApi.DEFAULT_CHAT_MODEL).temperature(0.7).build();
-        return new ZhiPuAiChatModel(zhiPuAiApiBuilder.build(), options, getToolCallingManager(), DEFAULT_RETRY_TEMPLATE,
-                getObservationRegistry().getIfAvailable());
-    }
-
-    private MiniMaxChatModel buildMiniMaxChatModel(String apiKey, String url) {
-        MiniMaxApi miniMaxApi = StrUtil.isEmpty(url) ? new MiniMaxApi(apiKey)
-                : new MiniMaxApi(url, apiKey);
-        MiniMaxChatOptions options = MiniMaxChatOptions.builder().model(MiniMaxApi.DEFAULT_CHAT_MODEL).temperature(0.7).build();
-        return new MiniMaxChatModel(miniMaxApi, options, getToolCallingManager(), DEFAULT_RETRY_TEMPLATE);
-    }
-
-    private MoonshotChatModel buildMoonshotChatModel(String apiKey, String url) {
-        MoonshotApi.Builder moonshotApiBuilder = MoonshotApi.builder()
-                .apiKey(apiKey);
-        if (StrUtil.isNotEmpty(url)) {
-            moonshotApiBuilder.baseUrl(url);
-        }
-        MoonshotChatOptions options = MoonshotChatOptions.builder().model(MoonshotApi.DEFAULT_CHAT_MODEL).build();
-        return MoonshotChatModel.builder()
-                .moonshotApi(moonshotApiBuilder.build())
-                .defaultOptions(options)
-                .toolCallingManager(getToolCallingManager())
-                .build();
-    }
-
-    private static XingHuoChatModel buildXingHuoChatModel(String key) {
-        List<String> keys = StrUtil.split(key, '|');
-        Assert.equals(keys.size(), 2, "XingHuoChatClient 的密钥需要 (appKey|secretKey) 格式");
-        AiProperties.XingHuo properties = new AiProperties.XingHuo();
-        properties.setAppKey(keys.get(0));
-        properties.setSecretKey(keys.get(1));
-        return new AiAutoConfiguration().buildXingHuoChatClient(properties);
-    }
-
-    private BaiChuanChatModel buildBaiChuanChatModel(String apiKey) {
-        AiProperties.BaiChuan properties = new AiProperties.BaiChuan();
-        properties.setApiKey(apiKey);
-        return new AiAutoConfiguration().buildBaiChuanChatClient(properties);
-    }
-
     private static OpenAiChatModel buildOpenAiChatModel(String openAiToken, String url) {
         url = StrUtil.blankToDefault(url, OpenAiApiConstants.DEFAULT_BASE_URL);
         OpenAiApi openAiApi = OpenAiApi.builder().baseUrl(url).apiKey(openAiToken).build();
@@ -309,35 +192,12 @@ public class AiModelFactoryImpl implements AiModelFactory {
                 .build();
     }
 
-    private ChatModel buildGrokChatModel(String apiKey, String url) {
-        AiProperties.Grok properties = new AiProperties.Grok();
-        properties.setBaseUrl(url);
-        properties.setApiKey(apiKey);
-        return new AiAutoConfiguration().buildGrokChatClient(properties);
-    }
-
     // ========== 各种创建 EmbeddingModel 的方法 ==========
 
     private DashScopeEmbeddingModel buildTongYiEmbeddingModel(String apiKey, String model) {
         DashScopeApi dashScopeApi = DashScopeApi.builder().apiKey(apiKey).build();
         DashScopeEmbeddingOptions dashScopeEmbeddingOptions = DashScopeEmbeddingOptions.builder().withModel(model).build();
         return new DashScopeEmbeddingModel(dashScopeApi, MetadataMode.EMBED, dashScopeEmbeddingOptions);
-    }
-
-    private ZhiPuAiEmbeddingModel buildZhiPuEmbeddingModel(String apiKey, String url, String model) {
-        ZhiPuAiApi.Builder zhiPuAiApiBuilder = ZhiPuAiApi.builder().apiKey(apiKey);
-        if (StrUtil.isNotEmpty(url)) {
-            zhiPuAiApiBuilder.baseUrl(url);
-        }
-        ZhiPuAiEmbeddingOptions zhiPuAiEmbeddingOptions = ZhiPuAiEmbeddingOptions.builder().model(model).build();
-        return new ZhiPuAiEmbeddingModel(zhiPuAiApiBuilder.build(), MetadataMode.EMBED, zhiPuAiEmbeddingOptions);
-    }
-
-    private EmbeddingModel buildMiniMaxEmbeddingModel(String apiKey, String url, String model) {
-        MiniMaxApi miniMaxApi = StrUtil.isEmpty(url) ? new MiniMaxApi(apiKey)
-                : new MiniMaxApi(url, apiKey);
-        MiniMaxEmbeddingOptions miniMaxEmbeddingOptions = MiniMaxEmbeddingOptions.builder().model(model).build();
-        return new MiniMaxEmbeddingModel(miniMaxApi, MetadataMode.EMBED, miniMaxEmbeddingOptions);
     }
 
     private OllamaEmbeddingModel buildOllamaEmbeddingModel(String url, String model) {

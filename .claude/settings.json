@@ -1,0 +1,26 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if echo \"$TOOL_INPUT\" | grep -qE '\\.(yml|yaml|properties)'; then echo '⚠️ WARNING: Editing config file. Ensure no real credentials (passwords, API keys) are being committed. Use placeholders or environment variables.'; fi"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if echo \"$TOOL_INPUT\" | grep -qE '\\.java'; then echo '🔨 Compiling...'; mvn compile -q 2>&1 | grep -E 'ERROR|BUILD' | tail -10; fi"
+          }
+        ]
+      }
+    ]
+  }
+}
