@@ -15,10 +15,23 @@ public class AiProperties {
      */
     private WebSearch webSearch;
 
+    /**
+     * 估值系统
+     */
+    private Valuation valuation;
+
     @Data
     public static class WebSearch {
         private boolean enable;
         private String apiKey;
+    }
+
+    @Data
+    public static class Valuation {
+        /**
+         * 估值后端基础 URL
+         */
+        private String baseUrl;
     }
 
 }

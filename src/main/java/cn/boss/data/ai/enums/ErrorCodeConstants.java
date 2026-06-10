@@ -46,4 +46,8 @@ public interface ErrorCodeConstants {
     ErrorCode TOOL_NOT_EXISTS = new ErrorCode(1_040_010_000, "工具不存在");
     ErrorCode TOOL_NAME_NOT_EXISTS = new ErrorCode(1_040_010_001, "工具({})找不到 Bean");
 
+    // ========== LLM 服务 1-040-011-000 ==========
+    ErrorCode LLM_SEARCH_ERROR = new ErrorCode(1_040_011_000, "产品语义搜索失败：{}");
+    ErrorCode LLM_FIELD_ANALYZE_ERROR = new ErrorCode(1_040_011_001, "字段重要性分析失败：{}");
+
 }

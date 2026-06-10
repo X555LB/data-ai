@@ -13,10 +13,6 @@ import cn.boss.data.ai.service.knowledge.AiKnowledgeDocumentService;
 import cn.boss.data.ai.service.knowledge.AiKnowledgeSegmentService;
 import cn.boss.data.ai.service.knowledge.bo.AiKnowledgeSegmentSearchReqBO;
 import cn.boss.data.ai.service.knowledge.bo.AiKnowledgeSegmentSearchRespBO;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.Parameters;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
 import org.hibernate.validator.constraints.URL;
@@ -30,7 +26,6 @@ import java.util.Map;
 import static cn.boss.data.ai.framework.common.pojo.CommonResult.success;
 import static cn.boss.data.ai.framework.common.util.collection.CollectionUtils.convertSet;
 
-@Tag(name = "管理后台 - AI 知识库段落")
 @RestController
 @RequestMapping("/ai/knowledge/segment")
 @Validated
@@ -42,15 +37,12 @@ public class AiKnowledgeSegmentController {
     private AiKnowledgeDocumentService documentService;
 
     @GetMapping("/get")
-    @Operation(summary = "获取段落详情")
-    @Parameter(name = "id", description = "段落编号", required = true, example = "1024")
     public CommonResult<AiKnowledgeSegmentRespVO> getKnowledgeSegment(@RequestParam("id") Long id) {
         AiKnowledgeSegmentDO segment = segmentService.getKnowledgeSegment(id);
         return success(BeanUtils.toBean(segment, AiKnowledgeSegmentRespVO.class));
     }
 
     @GetMapping("/page")
-    @Operation(summary = "获取段落分页")
     public CommonResult<PageResult<AiKnowledgeSegmentRespVO>> getKnowledgeSegmentPage(
             @Valid AiKnowledgeSegmentPageReqVO pageReqVO) {
         PageResult<AiKnowledgeSegmentDO> pageResult = segmentService.getKnowledgeSegmentPage(pageReqVO);
@@ -58,20 +50,17 @@ public class AiKnowledgeSegmentController {
     }
 
     @PostMapping("/create")
-    @Operation(summary = "创建段落")
     public CommonResult<Long> createKnowledgeSegment(@Valid @RequestBody AiKnowledgeSegmentSaveReqVO createReqVO) {
         return success(segmentService.createKnowledgeSegment(createReqVO));
     }
 
     @PutMapping("/update")
-    @Operation(summary = "更新段落内容")
     public CommonResult<Boolean> updateKnowledgeSegment(@Valid @RequestBody AiKnowledgeSegmentSaveReqVO reqVO) {
         segmentService.updateKnowledgeSegment(reqVO);
         return success(true);
     }
 
     @PutMapping("/update-status")
-    @Operation(summary = "启禁用段落内容")
     public CommonResult<Boolean> updateKnowledgeSegmentStatus(
             @Valid @RequestBody AiKnowledgeSegmentUpdateStatusReqVO reqVO) {
         segmentService.updateKnowledgeSegmentStatus(reqVO);
@@ -79,11 +68,6 @@ public class AiKnowledgeSegmentController {
     }
 
     @GetMapping("/split")
-    @Operation(summary = "切片内容")
-    @Parameters({
-            @Parameter(name = "url", description = "文档 URL", required = true),
-            @Parameter(name = "segmentMaxTokens", description = "分段的最大 Token 数", required = true)
-    })
     public CommonResult<List<AiKnowledgeSegmentRespVO>> splitContent(
             @RequestParam("url") @URL String url,
             @RequestParam(value = "segmentMaxTokens") Integer segmentMaxTokens) {
@@ -92,8 +76,6 @@ public class AiKnowledgeSegmentController {
     }
 
     @GetMapping("/get-process-list")
-    @Operation(summary = "获取文档处理列表")
-    @Parameter(name = "documentIds", description = "文档编号列表", required = true, example = "1,2,3")
     public CommonResult<List<AiKnowledgeSegmentProcessRespVO>> getKnowledgeSegmentProcessList(
             @RequestParam("documentIds") List<Long> documentIds) {
         List<AiKnowledgeSegmentProcessRespVO> list = segmentService.getKnowledgeSegmentProcessList(documentIds);
@@ -101,7 +83,6 @@ public class AiKnowledgeSegmentController {
     }
 
     @GetMapping("/search")
-    @Operation(summary = "搜索段落内容")
     public CommonResult<List<AiKnowledgeSegmentSearchRespVO>> searchKnowledgeSegment(
             @Valid AiKnowledgeSegmentSearchReqVO reqVO) {
         // 1. 搜索段落

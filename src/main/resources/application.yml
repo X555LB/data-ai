@@ -31,6 +31,8 @@ spring:
       host: 127.0.0.1
       port: 6379
       database: 0
+      repositories:
+        enabled: false # 项目未使用到 Spring Data Redis 的 Repository，所以直接禁用，保证启动速度
 
 # MyBatis Plus 配置
 mybatis-plus:
@@ -59,22 +61,6 @@ logging:
   level:
     cn.boss.data.ai: DEBUG
     org.springframework.ai: INFO
-
---- #################### 接口文档配置 ####################
-# Swagger 配置
-springdoc:
-  api-docs:
-    enabled: true
-    path: /v3/api-docs
-  swagger-ui:
-    path: /swagger-ui.html
-    
-# Spring Data Redis 配置
-spring:
-  data:
-    redis:
-      repositories:
-        enabled: false # 项目未使用到 Spring Data Redis 的 Repository，所以直接禁用，保证启动速度
 
 --- #################### AI 相关配置 ####################
 
@@ -136,3 +122,5 @@ boss:
     web-search:
       enable: true
       api-key: your-web-search-api-key
+    valuation:
+      base-url: http://47.92.30.163:8089  # 估值后端地址

@@ -3,6 +3,7 @@ package cn.boss.data.ai.framework.ai.config;
 import cn.boss.data.ai.framework.common.util.spring.SpringUtils;
 import cn.boss.data.ai.framework.ai.core.model.AiModelFactory;
 import cn.boss.data.ai.framework.ai.core.model.AiModelFactoryImpl;
+import cn.boss.data.ai.framework.ai.core.valuation.AiValuationClient;
 import cn.boss.data.ai.framework.ai.core.websearch.AiWebSearchClient;
 import cn.boss.data.ai.framework.ai.core.websearch.bocha.AiBoChaWebSearchClient;
 import io.micrometer.observation.ObservationRegistry;
@@ -64,6 +65,14 @@ public class AiAutoConfiguration {
     @ConditionalOnProperty(value = "boss.ai.web-search.enable", havingValue = "true")
     public AiWebSearchClient webSearchClient(AiProperties aiProperties) {
         return new AiBoChaWebSearchClient(aiProperties.getWebSearch().getApiKey());
+    }
+
+    // ========== 估值系统相关 ==========
+
+    @Bean
+    @ConditionalOnProperty(value = "boss.ai.valuation.base-url")
+    public AiValuationClient valuationClient(AiProperties aiProperties) {
+        return new AiValuationClient(aiProperties.getValuation().getBaseUrl());
     }
 
 }
