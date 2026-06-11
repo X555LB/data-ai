@@ -19,7 +19,6 @@ import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -46,9 +45,14 @@ public class AiLlmServiceImpl implements AiLlmService {
             以及一个搜索关键词。请根据语义相似度和关键词匹配，从产品列表中找出与关键词最匹配的产品。
 
             匹配规则：
-            1. 任一字段包含查询词或语义相关即可匹配
-            2. 忽略地域、企业名称等修饰词
-            3. 按匹配度从高到低排序
+            1. 先提取关键词的核心主题词，再判断产品是否围绕该核心主题
+            2. 关键词是产品名的子集或核心概括时应匹配（允许产品中包含关键词未提及的修饰词）
+            3. 忽略地域、企业名称、技术等级等修饰词的差异
+            4. 按匹配度从高到低排序
+
+            示例：
+            - 关键词"南方电网输电" 应匹配 "南方电网超高压输电"（"超高压"是技术等级修饰词，核心主题一致）
+            - 关键词"电力交易" 应匹配 "跨省电力交易数据"（"跨省"是范围修饰词，核心主题一致）
 
             输出规则（严格遵守）：
             1. 只输出匹配的产品ID，用英文逗号分隔，例如：123456,654321,789012
@@ -77,35 +81,20 @@ public class AiLlmServiceImpl implements AiLlmService {
 
     @Override
     public String llmSearch(AiLlmSearchReqVO reqVO) {
-        // 1. 调用估值后端获取产品知识列表
-        List<AiProductKnowledgeRecord> records = valuationClient.getProductKnowledgeList();
+        // 1. 调用估值后端获取产品知识列表（market + his 全量数据，后端已过滤 price>0 且未屏蔽）
+        List<AiProductKnowledgeRecord> records = valuationClient.getAllProductKnowledgeList();
         if (CollUtil.isEmpty(records)) {
             return "空";
         }
 
-        // 2. 按条件过滤
-        if (Boolean.TRUE.equals(reqVO.getFilterPrice())) {
-            records = records.stream()
-                    .filter(r -> r.getProdPrice() != null && r.getProdPrice().compareTo(BigDecimal.ZERO) > 0)
-                    .toList();
-        }
-        if (Boolean.TRUE.equals(reqVO.getFilterBlocked())) {
-            records = records.stream()
-                    .filter(r -> !"T".equals(r.getBlockFlag()))
-                    .toList();
-        }
-        if (CollUtil.isEmpty(records)) {
-            return "空";
-        }
-
-        // 3. 构建产品列表文本（ID + 名称 + 相关信息）
+        // 2. 构建产品列表文本（ID + 名称 + 相关信息）
         String productListText = records.stream()
                 .map(r -> {
                     StringBuilder sb = new StringBuilder();
                     sb.append("ID:").append(r.getId());
-                    sb.append(" 名称:").append(StrUtil.blankToDefault(r.getProductName(), ""));
-                    if (StrUtil.isNotBlank(r.getInfo())) {
-                        sb.append(" 信息:").append(r.getInfo());
+                    sb.append(" 名称:").append(StrUtil.blankToDefault(r.getName(), ""));
+                    if (StrUtil.isNotBlank(r.getDescript())) {
+                        sb.append(" 信息:").append(r.getDescript());
                     }
                     if (StrUtil.isNotBlank(r.getSectorsName())) {
                         sb.append(" 场景:").append(r.getSectorsName());

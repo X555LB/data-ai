@@ -32,6 +32,11 @@ public class AiProperties {
          * 估值后端基础 URL
          */
         private String baseUrl;
+
+        /**
+         * 内部服务调用 API Key
+         */
+        private String apiKey;
     }
 
 }

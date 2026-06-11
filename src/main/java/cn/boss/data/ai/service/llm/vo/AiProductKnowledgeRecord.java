@@ -2,33 +2,41 @@ package cn.boss.data.ai.service.llm.vo;
 
 import lombok.Data;
 
-import java.math.BigDecimal;
-
 /**
- * 产品知识记录（估值后端返回的数据结构）
+ * 产品知识记录（估值后端 KnowledgeVO 对应结构）
  */
 @Data
 public class AiProductKnowledgeRecord {
 
     /**
-     * 记录 ID
+     * 知识库 ID
      */
-    private Long id;
+    private String id;
 
     /**
      * 产品名称
      */
-    private String productName;
+    private String name;
 
     /**
-     * 相关信息
+     * 产品介绍
      */
-    private String info;
+    private String descript;
+
+    /**
+     * 产品类型
+     */
+    private String prodTypeName;
+
+    /**
+     * 归属单位
+     */
+    private String enterpriseName;
 
     /**
      * 价格
      */
-    private BigDecimal prodPrice;
+    private String prodPrice;
 
     /**
      * 价格单位
@@ -41,18 +49,8 @@ public class AiProductKnowledgeRecord {
     private String sectorsName;
 
     /**
-     * 产品类型
+     * 知识库类型：market 市场价格交易库, his 历史经验交易库
      */
-    private String prodTypeName;
-
-    /**
-     * 服务商
-     */
-    private String enterpriseName;
-
-    /**
-     * 是否屏蔽：T-已屏蔽，F-未屏蔽
-     */
-    private String blockFlag;
+    private String knowledgeType;
 
 }

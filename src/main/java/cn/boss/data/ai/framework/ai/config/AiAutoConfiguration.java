@@ -72,7 +72,7 @@ public class AiAutoConfiguration {
     @Bean
     @ConditionalOnProperty(value = "boss.ai.valuation.base-url")
     public AiValuationClient valuationClient(AiProperties aiProperties) {
-        return new AiValuationClient(aiProperties.getValuation().getBaseUrl());
+        return new AiValuationClient(aiProperties.getValuation().getBaseUrl(), aiProperties.getValuation().getApiKey());
     }
 
 }

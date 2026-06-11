@@ -1,16 +1,16 @@
 package cn.boss.data.ai.framework.ai.core.valuation;
 
+import cn.boss.data.ai.framework.common.pojo.CommonResult;
+import cn.boss.data.ai.framework.common.util.json.JsonUtils;
 import cn.boss.data.ai.service.llm.vo.AiProductKnowledgeRecord;
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.util.StrUtil;
 import cn.hutool.http.HttpUtil;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.core.type.TypeReference;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 /**
  * 估值后端 API 调用客户端
@@ -18,76 +18,54 @@ import java.util.Map;
 @Slf4j
 public class AiValuationClient {
 
-    private static final int PAGE_SIZE = 100;
-    private static final int MAX_RECORDS = 500;
-
-    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+    private static final String INTERNAL_API_KEY_HEADER = "X-Internal-Api-Key";
 
     private final String baseUrl;
+    private final String apiKey;
 
-    public AiValuationClient(String baseUrl) {
+    public AiValuationClient(String baseUrl, String apiKey) {
         this.baseUrl = baseUrl;
+        this.apiKey = apiKey;
     }
 
+    private static final TypeReference<CommonResult<List<AiProductKnowledgeRecord>>> LIST_TYPE_REF =
+            new TypeReference<>() {};
+
     /**
-     * 获取产品知识列表（分页拉取，最多 MAX_RECORDS 条）
+     * 获取所有产品知识列表（market 市场价格交易库 + his 历史经验交易库，合并返回）
      *
      * @return 产品知识记录列表
      */
-    public List<AiProductKnowledgeRecord> getProductKnowledgeList() {
-        List<AiProductKnowledgeRecord> allRecords = new ArrayList<>();
-        int pageNo = 1;
+    public List<AiProductKnowledgeRecord> getAllProductKnowledgeList() {
+        try {
+            String url = baseUrl + "/biz/valuation/knowledge/all-list";
+            String responseBody = StrUtil.isNotEmpty(apiKey)
+                    ? HttpUtil.createGet(url).header(INTERNAL_API_KEY_HEADER, apiKey).timeout(30000).execute().body()
+                    : HttpUtil.get(url, 30000);
 
-        while (allRecords.size() < MAX_RECORDS) {
-            try {
-                Map<String, Object> params = new HashMap<>();
-                params.put("pageNo", pageNo);
-                params.put("pageSize", PAGE_SIZE);
-
-                String url = baseUrl + "/biz/knowledge/product-knowledge/page";
-                String responseBody = HttpUtil.get(url, params, 30000);
-
-                JsonNode root = OBJECT_MAPPER.readTree(responseBody);
-                JsonNode codeNode = root.get("code");
-                if (codeNode != null && codeNode.asInt() != 0) {
-                    log.warn("[getProductKnowledgeList] 估值后端返回错误：{}", responseBody);
-                    break;
-                }
-
-                JsonNode dataNode = root.get("data");
-                if (dataNode == null) {
-                    break;
-                }
-
-                JsonNode listNode = dataNode.get("list");
-                if (listNode == null || !listNode.isArray() || listNode.isEmpty()) {
-                    break;
-                }
-
-                List<AiProductKnowledgeRecord> records = OBJECT_MAPPER.readValue(
-                        listNode.traverse(),
-                        OBJECT_MAPPER.getTypeFactory().constructCollectionType(List.class, AiProductKnowledgeRecord.class)
-                );
-                if (CollUtil.isEmpty(records)) {
-                    break;
-                }
-
-                allRecords.addAll(records);
-
-                JsonNode totalNode = dataNode.get("total");
-                int total = totalNode != null ? totalNode.asInt() : 0;
-                if (allRecords.size() >= total) {
-                    break;
-                }
-                pageNo++;
-            } catch (Exception e) {
-                log.error("[getProductKnowledgeList] 调用估值后端失败，pageNo={}", pageNo, e);
-                break;
+            if (!JsonUtils.isJson(responseBody)) {
+                log.error("[getAllProductKnowledgeList] 估值后端返回非 JSON 响应（可能服务未启动或地址错误），url={}，response={}",
+                        url, StrUtil.sub(responseBody, 0, 200));
+                return Collections.emptyList();
             }
-        }
 
-        log.info("[getProductKnowledgeList] 共获取 {} 条产品知识记录", allRecords.size());
-        return allRecords;
+            CommonResult<List<AiProductKnowledgeRecord>> result = JsonUtils.parseObject(responseBody, LIST_TYPE_REF);
+            if (!result.isSuccess()) {
+                log.warn("[getAllProductKnowledgeList] 估值后端返回错误：{}", responseBody);
+                return Collections.emptyList();
+            }
+
+            List<AiProductKnowledgeRecord> records = result.getData();
+            if (CollUtil.isEmpty(records)) {
+                return Collections.emptyList();
+            }
+
+            log.info("[getAllProductKnowledgeList] 共获取 {} 条产品知识记录（market + his）", records.size());
+            return records;
+        } catch (Exception e) {
+            log.error("[getAllProductKnowledgeList] 调用估值后端失败", e);
+            return Collections.emptyList();
+        }
     }
 
 }
