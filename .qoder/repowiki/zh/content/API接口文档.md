@@ -15,6 +15,9 @@
 - [AiKnowledgeSegmentSearchReqVO.java](file://src/main/java/cn/boss/data/ai/controller/knowledge/vo/segment/AiKnowledgeSegmentSearchReqVO.java)
 - [AiModelController.java](file://src/main/java/cn/boss/data/ai/controller/model/AiModelController.java)
 - [AiApiKeySaveReqVO.java](file://src/main/java/cn/boss/data/ai/controller/model/vo/apikey/AiApiKeySaveReqVO.java)
+- [AiLlmController.java](file://src/main/java/cn/boss/data/ai/controller/llm/AiLlmController.java)
+- [AiLlmSearchReqVO.java](file://src/main/java/cn/boss/data/ai/controller/llm/vo/AiLlmSearchReqVO.java)
+- [AiLlmServiceImpl.java](file://src/main/java/cn/boss/data/ai/service/llm/AiLlmServiceImpl.java)
 </cite>
 
 ## 目录
@@ -47,6 +50,7 @@ subgraph "控制器层"
 CC["AiChatConversationController"]
 KC["AiKnowledgeController"]
 MC["AiModelController"]
+LC["AiLlmController"]
 end
 subgraph "通用响应与错误"
 CR["CommonResult<T>"]
@@ -57,6 +61,7 @@ BA --> CFG
 CC --> CR
 KC --> CR
 MC --> CR
+LC --> CR
 CR --> GEC
 CR --> EC
 ```
@@ -65,11 +70,12 @@ CR --> EC
 - [BootstrapApplication.java:1-18](file://src/main/java/cn/boss/data/ai/BootstrapApplication.java#L1-L18)
 - [application.yml:1-190](file://src/main/resources/application.yml#L1-L190)
 - [CommonResult.java:1-85](file://src/main/java/cn/boss/data/ai/framework/common/pojo/CommonResult.java#L1-L85)
-- [GlobalErrorCodeConstants.java:1-27](file://src/main/java/cn/boss/data/ai/framework/common/exception/enums/GlobalErrorCodeConstants.java#L1-L27)
-- [ErrorCodeConstants.java:1-50](file://src/main/java/cn/boss/data/ai/enums/ErrorCodeConstants.java#L1-L50)
+- [GlobalErrorCodeConstants.java:1-26](file://src/main/java/cn/boss/data/ai/framework/common/exception/enums/GlobalErrorCodeConstants.java#L1-L26)
+- [ErrorCodeConstants.java:1-53](file://src/main/java/cn/boss/data/ai/enums/ErrorCodeConstants.java#L1-L53)
 - [AiChatConversationController.java:1-113](file://src/main/java/cn/boss/data/ai/controller/chat/AiChatConversationController.java#L1-L113)
 - [AiKnowledgeController.java:1-79](file://src/main/java/cn/boss/data/ai/controller/knowledge/AiKnowledgeController.java#L1-L79)
 - [AiModelController.java:1-84](file://src/main/java/cn/boss/data/ai/controller/model/AiModelController.java#L1-L84)
+- [AiLlmController.java:1-47](file://src/main/java/cn/boss/data/ai/controller/llm/AiLlmController.java#L1-L47)
 
 章节来源
 - [BootstrapApplication.java:1-18](file://src/main/java/cn/boss/data/ai/BootstrapApplication.java#L1-L18)
@@ -81,20 +87,22 @@ CR --> EC
   - 成功：code=0，msg 为空；失败：code 非 0，msg 为错误描述
   - 提供 success(data)、error(code,msg)、error(errorCode,...) 等静态工厂方法
 - 全局错误码 GlobalErrorCodeConstants
-  - 包含通用 HTTP 语义错误码（如 400、401、403、404、429、500 等）与系统级错误码（如 900、901、999）
+  - 包含通用 HTTP 语义错误码（如 400、401、403、404、405、423、429、500、501、502 等）与系统级错误码（如 900、901、999）
+  - **更新**：SUCCESS 使用 HTTP 状态码 200 表示成功
 - 业务错误码 ErrorCodeConstants
-  - 聚合 API 密钥、模型、聊天角色、聊天会话/消息、知识库/文档/段落、工具等模块的错误码
+  - 聚合 API 密钥、模型、聊天角色、聊天会话/消息、知识库/文档/段落、工具、LLM服务等模块的错误码
 - 控制器层
   - 聊天对话：创建、更新、查询、删除、分页、管理删除等
   - 知识库：分页、详情、创建、更新、删除、简易列表
   - 模型：创建、更新、删除、详情、分页、简易列表
   - API 密钥：保存（新增/修改）
+  - **新增** LLM服务：产品语义搜索、字段重要性分析
 
 章节来源
 - [CommonResult.java:1-85](file://src/main/java/cn/boss/data/ai/framework/common/pojo/CommonResult.java#L1-L85)
-- [GlobalErrorCodeConstants.java:1-27](file://src/main/java/cn/boss/data/ai/framework/common/exception/enums/GlobalErrorCodeConstants.java#L1-L27)
+- [GlobalErrorCodeConstants.java:1-26](file://src/main/java/cn/boss/data/ai/framework/common/exception/enums/GlobalErrorCodeConstants.java#L1-L26)
 - [ErrorCode.java:1-17](file://src/main/java/cn/boss/data/ai/framework/common/exception/ErrorCode.java#L1-L17)
-- [ErrorCodeConstants.java:1-50](file://src/main/java/cn/boss/data/ai/enums/ErrorCodeConstants.java#L1-L50)
+- [ErrorCodeConstants.java:1-53](file://src/main/java/cn/boss/data/ai/enums/ErrorCodeConstants.java#L1-L53)
 
 ## 架构总览
 Data-AI 的 API 层通过 Spring MVC 暴露，控制器负责参数校验、调用服务层并封装统一响应体。Swagger UI 可在启动后通过 /swagger-ui.html 访问，接口文档路径为 /v3/api-docs。
@@ -309,6 +317,31 @@ RESP-->>C : "返回 JSON 响应"
 章节来源
 - [AiApiKeySaveReqVO.java:1-35](file://src/main/java/cn/boss/data/ai/controller/model/vo/apikey/AiApiKeySaveReqVO.java#L1-L35)
 
+### LLM服务接口
+- 基础路径：/
+- **更新**：移除了 AiLlmSearchReqVO 中的 filterPrice 和 filterBlocked 字段，因为过滤现在由服务器端处理
+
+1) 产品语义搜索
+- 方法与路径：POST /
+- 请求体：AiLlmSearchReqVO
+  - keyword：搜索关键词（必填，非空）
+- 响应体：String（返回逗号分隔的产品ID列表或"空"）
+
+2) 字段重要性分析
+- 方法与路径：POST /field/analyze-by-llm
+- 请求体：AiFieldAnalyzeReqVO（字段由具体 VO 定义）
+- 响应体：String（JSON数组字符串或"[]"）
+
+请求示例
+- 请求方法：POST
+- 请求地址：/
+- 请求体：{"keyword":"智能手表"}
+- 响应体（示例）："123,456,789"
+
+章节来源
+- [AiLlmController.java:1-47](file://src/main/java/cn/boss/data/ai/controller/llm/AiLlmController.java#L1-L47)
+- [AiLlmSearchReqVO.java:1-15](file://src/main/java/cn/boss/data/ai/controller/llm/vo/AiLlmSearchReqVO.java#L1-L15)
+
 ## 依赖分析
 - 控制器依赖统一响应体 CommonResult<T>，确保所有接口返回一致的数据结构
 - 错误码体系分为全局错误码与业务错误码，分别对应通用 HTTP 语义与各模块业务
@@ -325,8 +358,8 @@ CFG --> SUI["Swagger UI"]
 
 图表来源
 - [CommonResult.java:1-85](file://src/main/java/cn/boss/data/ai/framework/common/pojo/CommonResult.java#L1-L85)
-- [GlobalErrorCodeConstants.java:1-27](file://src/main/java/cn/boss/data/ai/framework/common/exception/enums/GlobalErrorCodeConstants.java#L1-L27)
-- [ErrorCodeConstants.java:1-50](file://src/main/java/cn/boss/data/ai/enums/ErrorCodeConstants.java#L1-L50)
+- [GlobalErrorCodeConstants.java:1-26](file://src/main/java/cn/boss/data/ai/framework/common/exception/enums/GlobalErrorCodeConstants.java#L1-L26)
+- [ErrorCodeConstants.java:1-53](file://src/main/java/cn/boss/data/ai/enums/ErrorCodeConstants.java#L1-L53)
 - [application.yml:63-71](file://src/main/resources/application.yml#L63-L71)
 
 ## 性能考量
@@ -334,6 +367,7 @@ CFG --> SUI["Swagger UI"]
 - 知识库段落搜索建议合理设置 topK 与相似度阈值，减少向量检索成本
 - 控制器层尽量避免在接口中执行复杂计算，将耗时逻辑下沉至服务层并结合缓存
 - 统一响应体与错误码可减少前端解析成本，提升联调效率
+- **更新** LLM搜索接口建议合理设置关键词长度，避免过长关键词导致LLM处理时间过长
 
 ## 故障排查指南
 - 常见错误码
@@ -341,8 +375,12 @@ CFG --> SUI["Swagger UI"]
   - 401：账号未登录（需鉴权）
   - 403：没有该操作权限
   - 404：请求未找到
+  - 405：请求方法不正确
+  - 423：请求失败，请稍后重试
   - 429：请求过于频繁，请稍后重试
   - 500：系统异常
+  - 501：功能未实现/未开启
+  - 502：错误的配置项
   - 900：重复请求，请稍后重试
   - 901：演示模式，禁止写操作
   - 999：未知错误
@@ -352,6 +390,7 @@ CFG --> SUI["Swagger UI"]
   - 聊天相关：对话不存在、消息不存在、流式生成异常
   - 知识库/文档/段落：不存在、内容为空、加载失败、内容过长
   - 工具相关：不存在、找不到 Bean
+  - **新增** LLM服务：产品语义搜索失败、字段重要性分析失败
 - 排查步骤
   - 确认请求方法与路径是否匹配
   - 校验必填参数与格式
@@ -359,11 +398,11 @@ CFG --> SUI["Swagger UI"]
   - 若为 500 异常，查看服务端日志定位具体异常堆栈
 
 章节来源
-- [GlobalErrorCodeConstants.java:1-27](file://src/main/java/cn/boss/data/ai/framework/common/exception/enums/GlobalErrorCodeConstants.java#L1-L27)
-- [ErrorCodeConstants.java:1-50](file://src/main/java/cn/boss/data/ai/enums/ErrorCodeConstants.java#L1-L50)
+- [GlobalErrorCodeConstants.java:1-26](file://src/main/java/cn/boss/data/ai/framework/common/exception/enums/GlobalErrorCodeConstants.java#L1-L26)
+- [ErrorCodeConstants.java:1-53](file://src/main/java/cn/boss/data/ai/enums/ErrorCodeConstants.java#L1-L53)
 
 ## 结论
-Data-AI 的 API 采用统一响应体与清晰的错误码体系，结合 Swagger UI 实现了良好的可发现性与可测试性。通过分层架构与模块化设计，接口具备良好的扩展性与维护性。建议在生产环境中配合鉴权、限流与日志审计，确保安全与稳定性。
+Data-AI 的 API 采用统一响应体与清晰的错误码体系，结合 Swagger UI 实现了良好的可发现性与可测试性。通过分层架构与模块化设计，接口具备良好的扩展性与维护性。**更新** LLM服务接口简化了请求验证，移除了客户端过滤逻辑，提升了系统的安全性与一致性。建议在生产环境中配合鉴权、限流与日志审计，确保安全与稳定性。
 
 ## 附录
 
@@ -395,3 +434,5 @@ Data-AI 的 API 采用统一响应体与清晰的错误码体系，结合 Swagge
 - 对知识库段落搜索接口，先以较小 topK 与较宽松阈值进行验证，再逐步收紧
 - 对写操作接口（创建/更新/删除）建议在测试环境模拟重复请求，验证 900 重复请求保护
 - 对模型与 API 密钥接口，建议先创建/启用后再进行调用，避免 401/403/业务错误
+- **更新** 对 LLM搜索接口，建议测试不同长度的关键词，验证服务端过滤逻辑的有效性
+- **更新** 对 LLM字段分析接口，建议测试不同类型的分析请求，验证返回数据的准确性

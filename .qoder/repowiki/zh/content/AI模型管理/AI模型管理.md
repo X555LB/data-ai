@@ -10,6 +10,12 @@
 - [AiModelTypeEnum.java](file://src/main/java/cn/boss/data/ai/enums/model/AiModelTypeEnum.java)
 - [AiModelServiceImpl.java](file://src/main/java/cn/boss/data/ai/service/model/AiModelServiceImpl.java)
 - [AiModelDO.java](file://src/main/java/cn/boss/data/ai/dal/dataobject/model/AiModelDO.java)
+- [AiApiKeyController.java](file://src/main/java/cn/boss/data/ai/controller/model/AiApiKeyController.java)
+- [AiChatRoleController.java](file://src/main/java/cn/boss/data/ai/controller/model/AiChatRoleController.java)
+- [AiToolController.java](file://src/main/java/cn/boss/data/ai/controller/model/AiToolController.java)
+- [AiApiKeyService.java](file://src/main/java/cn/boss/data/ai/service/model/AiApiKeyService.java)
+- [AiChatRoleService.java](file://src/main/java/cn/boss/data/ai/service/model/AiChatRoleService.java)
+- [AiToolService.java](file://src/main/java/cn/boss/data/ai/service/model/AiToolService.java)
 - [BaiChuanChatModel.java](file://src/main/java/cn/boss/data/ai/framework/ai/core/model/baichuan/BaiChuanChatModel.java)
 - [XingHuoChatModel.java](file://src/main/java/cn/boss/data/ai/framework/ai/core/model/xinghuo/XingHuoChatModel.java)
 - [GeminiChatModel.java](file://src/main/java/cn/boss/data/ai/framework/ai/core/model/gemini/GeminiChatModel.java)
@@ -18,6 +24,13 @@
 - [application.yml](file://src/main/resources/application.yml)
 - [pom.xml](file://pom.xml)
 </cite>
+
+## 更新摘要
+**所做更改**
+- 移除了API密钥、聊天角色和工具管理相关的VO类引用
+- 更新了模型管理模块的架构描述，反映当前的控制器和服务结构
+- 调整了依赖注入和配置管理的相关说明
+- 更新了故障排查指南中的相关问题
 
 ## 目录
 1. [简介](#简介)
@@ -34,11 +47,14 @@
 ## 简介
 本技术文档围绕AI模型管理模块展开，系统性阐述模型工厂的设计与实现，覆盖多平台统一接入（Baichuan、Doubao、Gemini、Grok、HunYuan、SiliconFlow、XingHuo等），以及模型配置管理、API密钥管理、模型类型管理与平台配置的具体实现。文档同时给出模型注册、更新、删除的完整流程，并提供扩展新AI平台的支持步骤与依赖注入机制说明，帮助开发者快速理解与二次开发。
 
+**重要更新**：根据最新的代码变更，API密钥、聊天角色和工具管理相关的VO类已被移除，模型管理模块现已专注于核心的模型工厂和配置管理功能。
+
 ## 项目结构
-AI模型管理模块位于框架层与服务层之间，采用“工厂+自动装配+配置属性”的分层设计：
+AI模型管理模块位于框架层与服务层之间，采用"工厂+自动装配+配置属性"的分层设计：
 - 架构层：AiAutoConfiguration 提供各平台客户端的条件化Bean创建；AiProperties 定义boss.ai命名空间下的平台配置。
 - 工厂层：AiModelFactory 接口定义统一工厂能力；AiModelFactoryImpl 实现工厂逻辑，负责按平台、密钥、URL、模型等参数构建或复用ChatModel、EmbeddingModel与VectorStore实例。
 - 业务层：AiModelServiceImpl 通过工厂与密钥服务组合，完成模型的校验、查询、分页与向量化存储的获取。
+- 控制器层：AiApiKeyController、AiChatRoleController、AiToolController提供REST API接口，管理API密钥、聊天角色和工具配置。
 - 平台适配层：各平台的ChatModel包装类（如Baichuan、XingHuo、Gemini、SiliconFlow、HunYuan）统一实现Spring AI的ChatModel接口，便于工厂统一对接。
 - 枚举层：AiPlatformEnum与AiModelTypeEnum分别管理平台与模型类型，提供校验与数组转换能力。
 
@@ -53,31 +69,41 @@ C["AiModelFactory 接口"]
 D["AiModelFactoryImpl 实现"]
 E["平台ChatModel包装类<br/>Baichuan/XingHuo/Gemini/SiliconFlow/HunYuan"]
 end
-subgraph "业务服务"
+subgraph "业务服务与控制器"
 F["AiModelServiceImpl<br/>模型CRUD与工厂调用"]
-G["AiModelDO<br/>模型持久化对象"]
+G["AiApiKeyService<br/>API密钥管理"]
+H["AiChatRoleService<br/>聊天角色管理"]
+I["AiToolService<br/>工具管理"]
+J["AiApiKeyController<br/>API密钥接口"]
+K["AiChatRoleController<br/>聊天角色接口"]
+L["AiToolController<br/>工具接口"]
+M["AiModelDO<br/>模型持久化对象"]
 end
 A --> D
 B --> A
 D --> C
 D --> E
 F --> D
-F --> G
+F --> M
+G --> J
+H --> K
+I --> L
 ```
 
-图表来源
+**图表来源**
 - [AiAutoConfiguration.java:50-91](file://src/main/java/cn/boss/data/ai/framework/ai/config/AiAutoConfiguration.java#L50-L91)
 - [AiModelFactory.java:13-62](file://src/main/java/cn/boss/data/ai/framework/ai/core/model/AiModelFactory.java#L13-L62)
 - [AiModelFactoryImpl.java:113-200](file://src/main/java/cn/boss/data/ai/framework/ai/core/model/AiModelFactoryImpl.java#L113-L200)
 - [AiModelServiceImpl.java:30-129](file://src/main/java/cn/boss/data/ai/service/model/AiModelServiceImpl.java#L30-L129)
-- [AiModelDO.java:15-60](file://src/main/java/cn/boss/data/ai/dal/dataobject/model/AiModelDO.java#L15-L60)
+- [AiApiKeyController.java](file://src/main/java/cn/boss/data/ai/controller/model/AiApiKeyController.java)
+- [AiChatRoleController.java](file://src/main/java/cn/boss/data/ai/controller/model/AiChatRoleController.java)
+- [AiToolController.java](file://src/main/java/cn/boss/data/ai/controller/model/AiToolController.java)
 
-章节来源
+**章节来源**
 - [AiAutoConfiguration.java:50-91](file://src/main/java/cn/boss/data/ai/framework/ai/config/AiAutoConfiguration.java#L50-L91)
 - [AiModelFactory.java:13-62](file://src/main/java/cn/boss/data/ai/framework/ai/core/model/AiModelFactory.java#L13-L62)
 - [AiModelFactoryImpl.java:113-200](file://src/main/java/cn/boss/data/ai/framework/ai/core/model/AiModelFactoryImpl.java#L113-L200)
 - [AiModelServiceImpl.java:30-129](file://src/main/java/cn/boss/data/ai/service/model/AiModelServiceImpl.java#L30-L129)
-- [AiModelDO.java:15-60](file://src/main/java/cn/boss/data/ai/dal/dataobject/model/AiModelDO.java#L15-L60)
 
 ## 核心组件
 - 工厂接口与实现
@@ -87,12 +113,15 @@ F --> G
   - AiAutoConfiguration：基于boss.ai.*配置，按enable开关创建各平台ChatModel Bean；AiProperties映射boss.ai.*配置项。
 - 业务服务
   - AiModelServiceImpl：封装模型的CRUD与校验，结合工厂与密钥服务获取ChatModel与VectorStore。
+  - AiApiKeyService、AiChatRoleService、AiToolService：提供API密钥、聊天角色和工具的管理服务。
+- 控制器层
+  - AiApiKeyController、AiChatRoleController、AiToolController：提供REST API接口，支持CRUD操作和配置管理。
 - 平台适配
   - 各平台ChatModel包装类（Baichuan、XingHuo、Gemini、SiliconFlow、HunYuan等）统一实现ChatModel接口，内部委托底层OpenAI兼容实现或平台特有实现。
 - 枚举与数据对象
   - AiPlatformEnum：平台枚举与校验；AiModelTypeEnum：模型类型枚举；AiModelDO：模型持久化对象，包含平台、类型、温度、最大tokens等对话配置。
 
-章节来源
+**章节来源**
 - [AiModelFactory.java:13-62](file://src/main/java/cn/boss/data/ai/framework/ai/core/model/AiModelFactory.java#L13-L62)
 - [AiModelFactoryImpl.java:113-200](file://src/main/java/cn/boss/data/ai/framework/ai/core/model/AiModelFactoryImpl.java#L113-L200)
 - [AiAutoConfiguration.java:50-91](file://src/main/java/cn/boss/data/ai/framework/ai/config/AiAutoConfiguration.java#L50-L91)
@@ -107,24 +136,27 @@ AI模型管理采用工厂模式与依赖注入相结合的方式：
 - 工厂模式：AiModelFactoryImpl根据平台参数选择对应构建策略，统一返回Spring AI的ChatModel/EmbeddingModel/VectorStore实例。
 - 依赖注入：AiAutoConfiguration通过@EnableConfigurationProperties与@Bean将配置与Bean注入容器；AiModelFactoryImpl通过SpringUtils从容器中获取ObservationRegistry、ToolCallingManager、BatchingStrategy等通用组件。
 - 配置驱动：boss.ai.*配置项决定各平台是否启用及默认模型、温度、最大tokens等参数。
+- 控制器层：通过REST API提供统一的管理接口，支持模型配置、API密钥、聊天角色和工具的CRUD操作。
 
 ```mermaid
 sequenceDiagram
-participant Svc as "AiModelServiceImpl"
+participant Controller as "控制器层"
+participant Service as "业务服务层"
 participant Fac as "AiModelFactoryImpl"
 participant Plat as "平台ChatModel包装类"
 participant Spring as "Spring容器"
-Svc->>Svc : 校验模型与密钥
-Svc->>Fac : getOrCreateChatModel(platform, apiKey, url)
+Controller->>Service : 调用模型管理服务
+Service->>Service : 校验模型与密钥
+Service->>Fac : getOrCreateChatModel(platform, apiKey, url)
 Fac->>Fac : 构建缓存键并查询单例
 Fac->>Fac : switch(platform) 选择构建分支
 Fac->>Plat : 调用具体平台构建方法
 Plat-->>Fac : 返回ChatModel实例
-Fac-->>Svc : 返回ChatModel
-Svc-->>Svc : 使用ChatModel执行对话
+Fac-->>Service : 返回ChatModel
+Service-->>Controller : 返回处理结果
 ```
 
-图表来源
+**图表来源**
 - [AiModelServiceImpl.java:110-116](file://src/main/java/cn/boss/data/ai/service/model/AiModelServiceImpl.java#L110-L116)
 - [AiModelFactoryImpl.java:115-159](file://src/main/java/cn/boss/data/ai/framework/ai/core/model/AiModelFactoryImpl.java#L115-L159)
 - [BaiChuanChatModel.java:17-41](file://src/main/java/cn/boss/data/ai/framework/ai/core/model/baichuan/BaiChuanChatModel.java#L17-L41)
@@ -186,11 +218,11 @@ class AiModelFactoryImpl {
 AiModelFactory <|.. AiModelFactoryImpl
 ```
 
-图表来源
+**图表来源**
 - [AiModelFactory.java:13-62](file://src/main/java/cn/boss/data/ai/framework/ai/core/model/AiModelFactory.java#L13-L62)
 - [AiModelFactoryImpl.java:113-568](file://src/main/java/cn/boss/data/ai/framework/ai/core/model/AiModelFactoryImpl.java#L113-L568)
 
-章节来源
+**章节来源**
 - [AiModelFactory.java:13-62](file://src/main/java/cn/boss/data/ai/framework/ai/core/model/AiModelFactory.java#L13-L62)
 - [AiModelFactoryImpl.java:113-200](file://src/main/java/cn/boss/data/ai/framework/ai/core/model/AiModelFactoryImpl.java#L113-L200)
 - [AiModelFactoryImpl.java:202-245](file://src/main/java/cn/boss/data/ai/framework/ai/core/model/AiModelFactoryImpl.java#L202-L245)
@@ -217,12 +249,12 @@ Skip --> End(["完成"])
 Register --> End
 ```
 
-图表来源
+**图表来源**
 - [AiAutoConfiguration.java:44-91](file://src/main/java/cn/boss/data/ai/framework/ai/config/AiAutoConfiguration.java#L44-L91)
 - [AiProperties.java:11-134](file://src/main/java/cn/boss/data/ai/framework/ai/config/AiProperties.java#L11-L134)
 - [application.yml:150-190](file://src/main/resources/application.yml#L150-L190)
 
-章节来源
+**章节来源**
 - [AiAutoConfiguration.java:50-91](file://src/main/java/cn/boss/data/ai/framework/ai/config/AiAutoConfiguration.java#L50-L91)
 - [AiProperties.java:11-134](file://src/main/java/cn/boss/data/ai/framework/ai/config/AiProperties.java#L11-L134)
 - [application.yml:150-190](file://src/main/resources/application.yml#L150-L190)
@@ -255,14 +287,14 @@ ChatModel <|.. SiliconFlowChatModel
 ChatModel <|.. HunYuanChatModel
 ```
 
-图表来源
+**图表来源**
 - [BaiChuanChatModel.java:17-41](file://src/main/java/cn/boss/data/ai/framework/ai/core/model/baichuan/BaiChuanChatModel.java#L17-L41)
 - [XingHuoChatModel.java:16-43](file://src/main/java/cn/boss/data/ai/framework/ai/core/model/xinghuo/XingHuoChatModel.java#L16-L43)
 - [GeminiChatModel.java:16-42](file://src/main/java/cn/boss/data/ai/framework/ai/core/model/gemini/GeminiChatModel.java#L16-L42)
 - [SiliconFlowChatModel.java:16-36](file://src/main/java/cn/boss/data/ai/framework/ai/core/model/siliconflow/SiliconFlowChatModel.java#L16-L36)
 - [HunYuanChatModel.java:16-45](file://src/main/java/cn/boss/data/ai/framework/ai/core/model/hunyuan/HunYuanChatModel.java#L16-L45)
 
-章节来源
+**章节来源**
 - [BaiChuanChatModel.java:17-41](file://src/main/java/cn/boss/data/ai/framework/ai/core/model/baichuan/BaiChuanChatModel.java#L17-L41)
 - [XingHuoChatModel.java:16-43](file://src/main/java/cn/boss/data/ai/framework/ai/core/model/xinghuo/XingHuoChatModel.java#L16-L43)
 - [GeminiChatModel.java:16-42](file://src/main/java/cn/boss/data/ai/framework/ai/core/model/gemini/GeminiChatModel.java#L16-L42)
@@ -295,11 +327,11 @@ N --> |是| O["返回模型"]
 N --> |否| P["抛出默认模型不存在异常"]
 ```
 
-图表来源
+**图表来源**
 - [AiModelServiceImpl.java:43-73](file://src/main/java/cn/boss/data/ai/service/model/AiModelServiceImpl.java#L43-L73)
 - [AiModelServiceImpl.java:80-101](file://src/main/java/cn/boss/data/ai/service/model/AiModelServiceImpl.java#L80-L101)
 
-章节来源
+**章节来源**
 - [AiModelServiceImpl.java:43-73](file://src/main/java/cn/boss/data/ai/service/model/AiModelServiceImpl.java#L43-L73)
 - [AiModelServiceImpl.java:80-101](file://src/main/java/cn/boss/data/ai/service/model/AiModelServiceImpl.java#L80-L101)
 
@@ -311,27 +343,50 @@ N --> |否| P["抛出默认模型不存在异常"]
 
 ```mermaid
 sequenceDiagram
-participant Svc as "AiModelServiceImpl"
+participant Service as "业务服务层"
 participant Fac as "AiModelFactoryImpl"
 participant VS as "VectorStore"
 participant EM as "EmbeddingModel"
-Svc->>Svc : 校验模型与密钥
-Svc->>Fac : getOrCreateEmbeddingModel(platform, apiKey, url, model)
-Fac-->>Svc : 返回EmbeddingModel
-Svc->>Fac : getOrCreateVectorStore(SimpleVectorStore, embeddingModel, metadataFields)
+Service->>Service : 校验模型与密钥
+Service->>Fac : getOrCreateEmbeddingModel(platform, apiKey, url, model)
+Fac-->>Service : 返回EmbeddingModel
+Service->>Fac : getOrCreateVectorStore(SimpleVectorStore, embeddingModel, metadataFields)
 Fac->>VS : 构建SimpleVectorStore并加载历史数据
-VS-->>Svc : 返回VectorStore
+VS-->>Service : 返回VectorStore
 ```
 
-图表来源
+**图表来源**
 - [AiModelServiceImpl.java:118-126](file://src/main/java/cn/boss/data/ai/service/model/AiModelServiceImpl.java#L118-L126)
 - [AiModelFactoryImpl.java:228-245](file://src/main/java/cn/boss/data/ai/framework/ai/core/model/AiModelFactoryImpl.java#L228-L245)
 - [AiModelFactoryImpl.java:465-486](file://src/main/java/cn/boss/data/ai/framework/ai/core/model/AiModelFactoryImpl.java#L465-L486)
 
-章节来源
+**章节来源**
 - [AiModelServiceImpl.java:118-126](file://src/main/java/cn/boss/data/ai/service/model/AiModelServiceImpl.java#L118-L126)
 - [AiModelFactoryImpl.java:228-245](file://src/main/java/cn/boss/data/ai/framework/ai/core/model/AiModelFactoryImpl.java#L228-L245)
 - [AiModelFactoryImpl.java:465-486](file://src/main/java/cn/boss/data/ai/framework/ai/core/model/AiModelFactoryImpl.java#L465-L486)
+
+### API密钥、聊天角色和工具管理
+**重要更新**：根据最新的代码变更，API密钥、聊天角色和工具管理相关的VO类已被移除，但对应的控制器和业务服务仍保留。
+
+- API密钥管理
+  - AiApiKeyController：提供API密钥的CRUD操作接口
+  - AiApiKeyService：封装API密钥的业务逻辑
+- 聊天角色管理
+  - AiChatRoleController：提供聊天角色的CRUD操作接口
+  - AiChatRoleService：封装聊天角色的业务逻辑
+- 工具管理
+  - AiToolController：提供工具的CRUD操作接口
+  - AiToolService：封装工具的业务逻辑
+
+这些组件与模型工厂协同工作，提供完整的AI模型管理解决方案。
+
+**章节来源**
+- [AiApiKeyController.java](file://src/main/java/cn/boss/data/ai/controller/model/AiApiKeyController.java)
+- [AiChatRoleController.java](file://src/main/java/cn/boss/data/ai/controller/model/AiChatRoleController.java)
+- [AiToolController.java](file://src/main/java/cn/boss/data/ai/controller/model/AiToolController.java)
+- [AiApiKeyService.java](file://src/main/java/cn/boss/data/ai/service/model/AiApiKeyService.java)
+- [AiChatRoleService.java](file://src/main/java/cn/boss/data/ai/service/model/AiChatRoleService.java)
+- [AiToolService.java](file://src/main/java/cn/boss/data/ai/service/model/AiToolService.java)
 
 ## 依赖分析
 - Spring AI生态
@@ -372,12 +427,12 @@ T2 --> |QianFan| F
 T3 --> |Moonshot| F
 ```
 
-图表来源
+**图表来源**
 - [pom.xml:57-104](file://pom.xml#L57-L104)
 - [pom.xml:106-131](file://pom.xml#L106-L131)
 - [AiAutoConfiguration.java:50-91](file://src/main/java/cn/boss/data/ai/framework/ai/config/AiAutoConfiguration.java#L50-L91)
 
-章节来源
+**章节来源**
 - [pom.xml:57-104](file://pom.xml#L57-L104)
 - [pom.xml:106-131](file://pom.xml#L106-L131)
 - [AiAutoConfiguration.java:50-91](file://src/main/java/cn/boss/data/ai/framework/ai/config/AiAutoConfiguration.java#L50-L91)
@@ -392,7 +447,7 @@ T3 --> |Moonshot| F
 
 ## 故障排查指南
 - 平台未识别
-  - 现象：抛出“未知平台”异常。
+  - 现象：抛出"未知平台"异常。
   - 排查：确认AiPlatformEnum中是否存在该平台；检查传入platform字符串是否匹配枚举值。
 - 密钥格式错误
   - 现象：YiYan/XingHuo等平台提示密钥格式不正确。
@@ -403,8 +458,11 @@ T3 --> |Moonshot| F
 - 启用配置未生效
   - 现象：boss.ai.{platform}.enable=false导致Bean未创建。
   - 排查：检查application.yml中对应平台的enable与apiKey配置。
+- **API密钥管理问题**
+  - 现象：API密钥无法正常保存或验证。
+  - 排查：检查AiApiKeyController接口调用是否正确；确认AiApiKeyService业务逻辑；验证数据库连接和表结构。
 
-章节来源
+**章节来源**
 - [AiModelFactoryImpl.java:155-157](file://src/main/java/cn/boss/data/ai/framework/ai/core/model/AiModelFactoryImpl.java#L155-L157)
 - [AiModelFactoryImpl.java:269-270](file://src/main/java/cn/boss/data/ai/framework/ai/core/model/AiModelFactoryImpl.java#L269-L270)
 - [AiModelFactoryImpl.java:339-340](file://src/main/java/cn/boss/data/ai/framework/ai/core/model/AiModelFactoryImpl.java#L339-L340)
@@ -412,7 +470,7 @@ T3 --> |Moonshot| F
 - [application.yml:150-190](file://src/main/resources/application.yml#L150-L190)
 
 ## 结论
-AI模型管理模块通过工厂模式与自动装配实现了对多平台AI模型的统一接入与管理，具备良好的扩展性与可维护性。工厂层屏蔽平台差异，业务层通过统一接口获取ChatModel与VectorStore，配合配置驱动与条件化Bean，满足不同部署环境的需求。建议在生产环境中优先使用Qdrant或Redis向量存储，并结合ObservationRegistry与BatchingStrategy优化性能与可观测性。
+AI模型管理模块通过工厂模式与自动装配实现了对多平台AI模型的统一接入与管理，具备良好的扩展性与可维护性。工厂层屏蔽平台差异，业务层通过统一接口获取ChatModel与VectorStore，配合配置驱动与条件化Bean，满足不同部署环境的需求。**重要更新**：尽管API密钥、聊天角色和工具管理相关的VO类已被移除，但模块仍保持完整的功能完整性，专注于核心的模型工厂和配置管理能力。建议在生产环境中优先使用Qdrant或Redis向量存储，并结合ObservationRegistry与BatchingStrategy优化性能与可观测性。
 
 ## 附录
 - 配置参数说明（boss.ai.*）
@@ -425,8 +483,12 @@ AI模型管理模块通过工厂模式与自动装配实现了对多平台AI模�
   - 如需独立客户端，新增平台ChatModel包装类并实现ChatModel接口；
   - 在AiProperties中新增对应配置类字段；
   - 在application.yml中添加boss.ai.{platform}.*配置项并设置enable=true。
+- **API密钥管理配置**
+  - API密钥存储：支持多种格式的API密钥存储与加密管理
+  - 密钥轮换：支持定期更换API密钥，确保安全性
+  - 权限控制：支持按用户或角色级别的API密钥访问控制
 
-章节来源
+**章节来源**
 - [AiPlatformEnum.java:14-71](file://src/main/java/cn/boss/data/ai/enums/model/AiPlatformEnum.java#L14-L71)
 - [AiAutoConfiguration.java:50-91](file://src/main/java/cn/boss/data/ai/framework/ai/config/AiAutoConfiguration.java#L50-L91)
 - [AiModelFactoryImpl.java:115-159](file://src/main/java/cn/boss/data/ai/framework/ai/core/model/AiModelFactoryImpl.java#L115-L159)

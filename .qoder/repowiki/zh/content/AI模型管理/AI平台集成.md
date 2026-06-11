@@ -18,15 +18,14 @@
 - [application.yml](file://src/main/resources/application.yml)
 - [AiWebSearchClient.java](file://src/main/java/cn/boss/data/ai/framework/ai/core/websearch/AiWebSearchClient.java)
 - [AiWebSearchRequest.java](file://src/main/java/cn/boss/data/ai/framework/ai/core/websearch/AiWebSearchRequest.java)
-- [CLAUDE.md](file://CLAUDE.md)
 </cite>
 
 ## 更新摘要
 **所做更改**
-- 新增Claude AI平台支持章节，包含平台集成配置和使用说明
-- 扩展AI平台枚举，添加Claude平台标识
-- 更新平台支持矩阵，反映Claude平台的加入
-- 补充Claude平台的配置示例和最佳实践
+- 移除Claude AI平台相关章节和配置说明
+- 更新平台支持矩阵，移除Claude平台条目
+- 删除Claude平台的配置示例和集成指南
+- 更新架构图和依赖关系图，移除Claude相关组件
 
 ## 目录
 1. [简介](#简介)
@@ -41,7 +40,7 @@
 10. [附录](#附录)
 
 ## 简介
-本技术文档面向AI平台集成场景，系统化阐述项目对多家国内外大模型平台的统一接入与抽象实现，覆盖以下平台：Baichuan、Doubao、Gemini、Grok、HunYuan、SiliconFlow、XingHuo、Claude等。文档从架构设计、统一接口、配置管理、动态启用、参数封装、响应与错误处理、新增平台扩展等方面进行全面说明，并提供可操作的配置示例与最佳实践。
+本技术文档面向AI平台集成场景，系统化阐述项目对多家国内外大模型平台的统一接入与抽象实现，覆盖以下平台：Baichuan、Doubao、Gemini、Grok、HunYuan、SiliconFlow、XingHuo等。文档从架构设计、统一接口、配置管理、动态启用、参数封装、响应与错误处理、新增平台扩展等方面进行全面说明，并提供可操作的配置示例与最佳实践。
 
 ## 项目结构
 项目采用分层+按功能域划分的组织方式：
@@ -69,7 +68,6 @@ SIL["SiliconFlowChatModel"]
 XH["XingHuoChatModel"]
 BC["BaiChuanChatModel"]
 GR["GrokChatModel"]
-CLA["ClaudeChatModel<br/>新增平台"]
 end
 subgraph "应用层"
 APP["application.yml<br/>平台开关与默认值"]
@@ -82,7 +80,6 @@ AC --> SIL
 AC --> XH
 AC --> BC
 AC --> GR
-AC --> CLA
 AF --> AFImpl
 AFImpl --> GEM
 AFImpl --> DOUB
@@ -91,7 +88,6 @@ AFImpl --> SIL
 AFImpl --> XH
 AFImpl --> BC
 AFImpl --> GR
-AFImpl --> CLA
 APP --> AC
 ```
 
@@ -157,7 +153,6 @@ F-->>C : 返回统一模型对象
   - OpenAI风格：Gemini、DouBao、BaiChuan、XingHuo（部分版本）
   - DeepSeek风格：SiliconFlow、HunYuan（根据模型前缀选择不同基础URL）
   - Grok：自定义OpenAI兼容路径
-  - Claude：基于Anthropic官方API的OpenAI兼容封装
 
 **章节来源**
 - [AiProperties.java:13-134](file://src/main/java/cn/boss/data/ai/framework/ai/config/AiProperties.java#L13-L134)
@@ -170,8 +165,8 @@ F-->>C : 返回统一模型对象
   - 向量化与嵌入：getOrCreateEmbeddingModel、getOrCreateVectorStore
 - 工厂实现：
   - 使用单例缓存避免重复创建
-  - 针对不同平台分支构建底层模型（DashScope、QianFan、DeepSeek、ZhiPu、MiniMax、Moonshot、OpenAI、AzureOpenAI、Anthropic、Ollama、Grok、Claude等）
-  - 对部分平台（如XingHuo、DouBao、HunYuan、SiliconFlow、BaiChuan、Gemini、Grok、Claude）通过AiAutoConfiguration辅助构建
+  - 针对不同平台分支构建底层模型（DashScope、QianFan、DeepSeek、ZhiPu、MiniMax、Moonshot、OpenAI、AzureOpenAI、Grok等）
+  - 对部分平台（如XingHuo、DouBao、HunYuan、SiliconFlow、BaiChuan、Gemini、Grok）通过AiAutoConfiguration辅助构建
 
 ```mermaid
 classDiagram
@@ -194,7 +189,6 @@ class SiliconFlowChatModel
 class XingHuoChatModel
 class BaiChuanChatModel
 class GrokChatModel
-class ClaudeChatModel
 AiModelFactory <|.. AiModelFactoryImpl
 AiModelFactoryImpl --> GeminiChatModel : "构建/缓存"
 AiModelFactoryImpl --> DouBaoChatModel
@@ -203,7 +197,6 @@ AiModelFactoryImpl --> SiliconFlowChatModel
 AiModelFactoryImpl --> XingHuoChatModel
 AiModelFactoryImpl --> BaiChuanChatModel
 AiModelFactoryImpl --> GrokChatModel
-AiModelFactoryImpl --> ClaudeChatModel
 ```
 
 **图表来源**
@@ -280,15 +273,6 @@ AiModelFactoryImpl --> ClaudeChatModel
 - [XingHuoChatModel.java:16-42](file://src/main/java/cn/boss/data/ai/framework/ai/core/model/xinghuo/XingHuoChatModel.java#L16-L42)
 - [AiAutoConfiguration.java:181-210](file://src/main/java/cn/boss/data/ai/framework/ai/config/AiAutoConfiguration.java#L181-L210)
 
-#### Claude（Anthropic）
-- 基于Anthropic官方API的OpenAI兼容封装
-- 支持Claude系列模型（如claude-3-haiku、claude-3-sonnet等）
-- 默认基础URL指向Anthropic官方API端点
-- 通过OpenAI兼容路径实现统一参数传递
-
-**章节来源**
-- [AiAutoConfiguration.java:261-278](file://src/main/java/cn/boss/data/ai/framework/ai/config/AiAutoConfiguration.java#L261-L278)
-
 ### 参数配置、认证与使用限制
 - 配置项
   - enable：是否启用该平台
@@ -298,7 +282,6 @@ AiModelFactoryImpl --> ClaudeChatModel
 - 认证方式
   - 多数平台使用api-key
   - XingHuo使用appKey与secretKey拼接
-  - Claude使用Anthropic官方API密钥
 - 使用限制
   - 不同平台对模型名、温度、最大token等参数范围存在约束，建议遵循平台文档
   - 流式输出由底层模型支持，统一通过stream接口返回
@@ -340,7 +323,7 @@ AiModelFactoryImpl --> ClaudeChatModel
 - [AiAutoConfiguration.java:52-286](file://src/main/java/cn/boss/data/ai/framework/ai/config/AiAutoConfiguration.java#L52-L286)
 - [AiModelFactoryImpl.java:162-200](file://src/main/java/cn/boss/data/ai/framework/ai/core/model/AiModelFactoryImpl.java#L162-L200)
 
-### 新增AI平台支持（适配器模式与配置管理最佳实践）
+### 新增AI平台支持（适配器模式与配置管理最佳 practices）
 - 适配器模式
   - 新增平台实现ChatModel接口，封装底层API调用
   - 若与OpenAI兼容，可复用OpenAI风格封装；否则参考SiliconFlow/DeepSeek风格
@@ -377,7 +360,7 @@ AiModelFactoryImpl --> ClaudeChatModel
   - 工厂实现依赖平台适配器与AiAutoConfiguration
   - 平台适配器依赖底层Spring AI模型或OpenAI兼容封装
 - 外部依赖
-  - Spring AI生态（OpenAI、AzureOpenAI、DeepSeek、Anthropic、Ollama等）
+  - Spring AI生态（OpenAI、AzureOpenAI、DeepSeek、Ollama等）
   - 第三方SDK（DashScope、QianFan、ZhiPu、MiniMax、Moonshot等）
 - 循环依赖
   - 未见循环依赖迹象；工厂与适配器职责清晰
@@ -391,7 +374,6 @@ AFImpl --> SIL["SiliconFlowChatModel"]
 AFImpl --> XH["XingHuoChatModel"]
 AFImpl --> BC["BaiChuanChatModel"]
 AFImpl --> GR["GrokChatModel"]
-AFImpl --> CLA["ClaudeChatModel"]
 AC["AiAutoConfiguration"] --> GEM
 AC --> DOUB
 AC --> HUNY
@@ -399,7 +381,6 @@ AC --> SIL
 AC --> XH
 AC --> BC
 AC --> GR
-AC --> CLA
 ```
 
 **图表来源**
@@ -420,11 +401,11 @@ AC --> CLA
 - 平台未启用
   - 检查boss.ai.<platform>.enable是否为true
 - 认证失败
-  - 确认api-key/appKey/secretKey正确；XingHuo需使用appKey:secretKey拼接；Claude使用Anthropic官方API密钥
+  - 确认api-key/appKey/secretKey正确；XingHuo需使用appKey:secretKey拼接
 - 模型不可用
   - 检查model是否在平台可用列表；未设置时回退到平台默认
 - 端点异常
-  - 检查base-url是否正确；部分平台（如HunYuan、Grok、Claude）支持自定义base-url
+  - 检查base-url是否正确；部分平台（如HunYuan、Grok）支持自定义base-url
 - 流式输出问题
   - 确保客户端正确消费Flux流；服务端日志级别可调整至DEBUG定位
 
@@ -433,7 +414,7 @@ AC --> CLA
 - [AiAutoConfiguration.java:65-278](file://src/main/java/cn/boss/data/ai/framework/ai/config/AiAutoConfiguration.java#L65-L278)
 
 ## 结论
-本项目通过统一工厂与适配器模式，实现了对多家AI平台的一致接入与抽象，具备良好的可扩展性与可维护性。通过配置驱动与条件化Bean，平台启用与切换灵活可控；通过流式输出与缓存机制，兼顾性能与用户体验。新增Claude平台支持进一步丰富了平台生态，为用户提供了更多选择。建议在生产环境中结合外部网关实现多实例负载均衡，并完善统一异常与监控体系。
+本项目通过统一工厂与适配器模式，实现了对多家AI平台的一致接入与抽象，具备良好的可扩展性与可维护性。通过配置驱动与条件化Bean，平台启用与切换灵活可控；通过流式输出与缓存机制，兼顾性能与用户体验。移除Claude平台支持后，项目更加专注于核心平台的稳定性和性能优化。建议在生产环境中结合外部网关实现多实例负载均衡，并完善统一异常与监控体系。
 
 ## 附录
 
@@ -463,33 +444,14 @@ AC --> CLA
   - boss.ai.baichuan.enable: true
   - boss.ai.baichuan.api-key: <你的密钥>
   - boss.ai.baichuan.model: Baichuan4-Turbo
-- Claude
-  - boss.ai.claude.enable: true
-  - boss.ai.claude.api-key: <你的密钥>
-  - boss.ai.claude.base-url: https://api.anthropic.com
-  - boss.ai.claude.model: claude-3-haiku
+- Grok
+  - boss.ai.grok.enable: true
+  - boss.ai.grok.api-key: <你的密钥>
+  - boss.ai.grok.base-url: https://api.x.ai
+  - boss.ai.grok.model: grok-2-preview-04-2025
 - Web Search
   - boss.ai.web-search.enable: true
   - boss.ai.web-search.api-key: <你的密钥>
 
 **章节来源**
 - [application.yml:150-190](file://src/main/resources/application.yml#L150-L190)
-
-### Claude平台集成指南
-- 集成要求
-  - 需要有效的Anthropic API密钥
-  - 支持Claude系列模型（claude-3-haiku、claude-3-sonnet、claude-3-opus等）
-  - 可选配置base-url，默认指向Anthropic官方API
-- 配置要点
-  - boss.ai.claude.enable: true/false
-  - boss.ai.claude.api-key: Anthropic官方API密钥
-  - boss.ai.claude.base-url: 可选，自定义API端点
-  - boss.ai.claude.model: 指定使用的Claude模型
-- 使用建议
-  - Claude平台具有严格的速率限制，请合理控制请求频率
-  - 建议在生产环境配置适当的超时和重试机制
-  - Claude的输出质量较高但成本相对较高，建议根据实际需求选择合适的模型
-
-**章节来源**
-- [CLAUDE.md](file://CLAUDE.md)
-- [AiAutoConfiguration.java:261-278](file://src/main/java/cn/boss/data/ai/framework/ai/config/AiAutoConfiguration.java#L261-L278)

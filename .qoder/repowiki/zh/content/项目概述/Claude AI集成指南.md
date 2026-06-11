@@ -2,7 +2,7 @@
 
 <cite>
 **本文档引用的文件**
-- [CLAUDE.md](file://CLAUDE.md)
+- [AGENTS.md](file://AGENTS.md)
 - [AiAutoConfiguration.java](file://src/main/java/cn/boss/data/ai/framework/ai/config/AiAutoConfiguration.java)
 - [AiProperties.java](file://src/main/java/cn/boss/data/ai/framework/ai/config/AiProperties.java)
 - [AiModelFactory.java](file://src/main/java/cn/boss/data/ai/framework/ai/core/model/AiModelFactory.java)
@@ -14,6 +14,14 @@
 - [AiWebSearchClient.java](file://src/main/java/cn/boss/data/ai/framework/ai/core/websearch/AiWebSearchClient.java)
 - [AiBoChaWebSearchClient.java](file://src/main/java/cn/boss/data/ai/framework/ai/core/websearch/bocha/AiBoChaWebSearchClient.java)
 </cite>
+
+## 更新摘要
+**所做更改**
+- 删除了与 Claude 平台集成相关的所有内容和引用
+- 移除了 CLAUDE.md 文档文件的引用
+- 更新了项目架构说明，反映 Claude 平台的完全移除
+- 调整了平台支持列表，移除 Claude 相关配置
+- 更新了故障排除指南中的平台相关问题
 
 ## 目录
 1. [简介](#简介)
@@ -31,7 +39,7 @@
 这是一个基于Spring Boot 3.5 + Spring AI 1.1构建的AI平台后端系统，支持多模型厂商集成，包括DeepSeek、OpenAI、Ollama等。该项目采用模块化设计，提供完整的AI对话、知识库管理和模型管理功能。
 
 **章节来源**
-- [CLAUDE.md:1-99](file://CLAUDE.md#L1-L99)
+- [AGENTS.md:5-7](file://AGENTS.md#L5-L7)
 
 ## 项目架构
 
@@ -74,7 +82,7 @@ WebSearch --> Controller
 ```
 
 **图表来源**
-- [CLAUDE.md:14-37](file://CLAUDE.md#L14-L37)
+- [AGENTS.md:9-11](file://AGENTS.md#L9-L11)
 
 ### 核心模块
 
@@ -85,7 +93,7 @@ WebSearch --> Controller
 | model | controller/model, service/model, dal/.../model | 模型管理（API Key、模型、角色、工具） |
 
 **章节来源**
-- [CLAUDE.md:39-46](file://CLAUDE.md#L39-L46)
+- [AGENTS.md:7-7](file://AGENTS.md#L7-L7)
 
 ## 核心组件
 
@@ -365,10 +373,10 @@ DO --> Enum
 ```
 
 **图表来源**
-- [CLAUDE.md:47-71](file://CLAUDE.md#L47-L71)
+- [AGENTS.md:7-7](file://AGENTS.md#L7-L7)
 
 **章节来源**
-- [CLAUDE.md:72-85](file://CLAUDE.md#L72-L85)
+- [AGENTS.md:7-7](file://AGENTS.md#L7-L7)
 
 ## 性能考虑
 
@@ -418,3 +426,5 @@ DO --> Enum
 5. **生产就绪**: 完善的配置管理和监控机制
 
 该系统为构建企业级AI应用提供了坚实的基础，开发者可以根据具体需求进行定制和扩展。
+
+**更新说明**: 本指南已更新以反映 Claude 平台集成的完全移除。项目现已专注于 DeepSeek、OpenAI 和 Ollama 等平台的支持，并移除了所有与 Claude 相关的配置和代码引用。
