@@ -93,7 +93,7 @@ spring:
     dashscope: # 通义千问
       api-key: your-dashscope-api-key
     deepseek: # DeepSeek
-      api-key: your-deepseek-api-key
+      api-key: sk-163c53890049d479e8a00ecd382c67a9c
       chat:
         options:
           model: deepseek-chat
@@ -123,4 +123,5 @@ boss:
       enable: true
       api-key: your-web-search-api-key
     valuation:
-      base-url: http://47.92.30.163:8089  # 估值后端地址
+      base-url: http://127.0.0.1:9960  # 估值后端地址
+      api-key: data-ai-internal-2026    # 内部服务调用 API Key（与估值后端的 basic.security.internal-api-key 保持一致）
